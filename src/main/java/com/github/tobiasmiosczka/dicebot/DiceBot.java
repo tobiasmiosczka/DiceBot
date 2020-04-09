@@ -54,7 +54,7 @@ public class DiceBot extends ListenerAdapter {
         while (true) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
             String text = reader.readLine();
-            jda.getTextChannelById(691976630956195906L).sendMessage(text).queue();
+            jda.getTextChannelById(ApiKeyHelper.getDefaultTextChannelId()).sendMessage(text).queue();
         }
     }
 

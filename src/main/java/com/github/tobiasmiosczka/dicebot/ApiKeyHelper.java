@@ -6,13 +6,27 @@ import java.util.Properties;
 
 public class ApiKeyHelper {
 
+    private static String apiKey;
+    private static long defaultTextChannelId;
+
+    static {
+        try {
+            InputStream input = ClassLoader.getSystemClassLoader().getResource("discord.properties").openStream();
+            Properties prop = new Properties();
+            prop.load(input);
+            apiKey = prop.getProperty("api.key");
+            defaultTextChannelId = Long.valueOf(prop.getProperty("defaultTextChannelId"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static String getApiKey() throws IOException {
-        InputStream input = ClassLoader.getSystemClassLoader().getResource("discord.properties").openStream();
+        return apiKey;
+    }
 
-        Properties prop = new Properties();
-        prop.load(input);
-
-        return (prop.getProperty("api.key"));
+    public static long getDefaultTextChannelId() throws IOException {
+        return defaultTextChannelId;
     }
 
 }
