@@ -33,6 +33,8 @@ public class DiceBot extends ListenerAdapter {
     private static final ScriptEngineManager mgr = new ScriptEngineManager();
     private static final ScriptEngine engine = mgr.getEngineByName("JavaScript");
 
+    private static final String COMMAND_PREFIX = "!";
+
     private Map<Long, int[]> rollStats;
 
     private final JDA jda;
@@ -82,19 +84,19 @@ public class DiceBot extends ListenerAdapter {
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
         System.out.println(event.getMessage().getContentRaw());
         String input = event.getMessage().getContentRaw();
-        if (input.startsWith("!r "))
+        if (input.startsWith(COMMAND_PREFIX + "r "))
             roll(event.getAuthor(), event.getChannel(), event.getMessage());
 
-        if (input.equals("!p"))
+        if (input.equals(COMMAND_PREFIX + "p"))
             p(event.getAuthor(), event.getChannel());
 
-        if (input.equals("!info"))
-            event.getChannel().sendMessage("https://github.com/tobiasmiosczka/DiceBot").queue();
+        if (input.equals(COMMAND_PREFIX + "info"))
+            event.getChannel().sendMessage("I am open source!\nView: https://github.com/tobiasmiosczka/DiceBot").queue();
 
-        if (input.equals("!ru"))
+        if (input.equals(COMMAND_PREFIX + "ru"))
            getRandomUser(event.getChannel(), event.getAuthor());
 
-        if (input.equals("!pstats"))
+        if (input.equals(COMMAND_PREFIX + "pstats"))
             getRollStats(event.getAuthor(), event.getChannel());
 
     }
@@ -143,7 +145,7 @@ public class DiceBot extends ListenerAdapter {
 
     private void roll(User author, MessageChannel messageChannel, Message message) {
         String input = message.getContentRaw()
-                .replace("!r", "")
+                .replace(COMMAND_PREFIX + "r", "")
                 .trim();
         if (input.isEmpty()) {
             messageChannel.sendMessage("Roll what?").queue();
