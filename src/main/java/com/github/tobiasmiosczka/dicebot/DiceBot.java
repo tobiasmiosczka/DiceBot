@@ -82,7 +82,6 @@ public class DiceBot extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
-        System.out.println(event.getMessage().getContentRaw());
         String input = event.getMessage().getContentRaw();
         if (input.startsWith(COMMAND_PREFIX + "r "))
             roll(event.getAuthor(), event.getChannel(), event.getMessage());
