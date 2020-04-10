@@ -13,7 +13,7 @@ Returns the result of a roll as specified by the argument. Examples are:
 
 !p 
 -
-Returns the result of 3d20 roll. Additionally shows if a critical hit or miss happened according to the rules of DSA5. 
+Returns the result of 3d20 roll. Additionally shows if a critical hit or miss occurred according to the rules of DSA5. 
 
 !pstats
 -
