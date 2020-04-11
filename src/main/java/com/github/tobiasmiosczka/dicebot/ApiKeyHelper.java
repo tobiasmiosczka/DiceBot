@@ -1,6 +1,5 @@
 package com.github.tobiasmiosczka.dicebot;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -15,17 +14,17 @@ public class ApiKeyHelper {
             Properties prop = new Properties();
             prop.load(input);
             apiKey = prop.getProperty("api.key");
-            defaultTextChannelId = Long.valueOf(prop.getProperty("defaultTextChannelId"));
+            defaultTextChannelId = Long.parseLong(prop.getProperty("defaultTextChannelId"));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static String getApiKey() throws IOException {
+    public static String getApiKey() {
         return apiKey;
     }
 
-    public static long getDefaultTextChannelId() throws IOException {
+    public static long getDefaultTextChannelId() {
         return defaultTextChannelId;
     }
 
