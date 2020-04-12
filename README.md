@@ -11,6 +11,8 @@ Returns the result of a roll as specified by the argument. Examples are:
 - !r 3d20 + 3
 - !r (5d100 - 5) * 2
 
+This command also supports the full javascript language.
+
 !p 
 -
 Returns the result of 3d20 roll. Additionally shows if a critical hit or miss occurred according to the rules of DSA5. 
