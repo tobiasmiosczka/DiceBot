@@ -29,3 +29,6 @@ Returns a link to this page.
 
 Licence
 =
+This software is licenced under the MIT licence. The full licence text is in [Licence][1].
+
+[1]: https://github.com/tobiasmiosczka/DiceBot/blob/master/LICENSE
