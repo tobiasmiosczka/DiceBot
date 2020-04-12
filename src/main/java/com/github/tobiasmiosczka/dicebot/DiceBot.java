@@ -21,9 +21,6 @@ import javax.security.auth.login.LoginException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class DiceBot extends ListenerAdapter {
 
@@ -32,20 +29,19 @@ public class DiceBot extends ListenerAdapter {
     private static final DiceNotationParser diceNotationParser = new DiceNotationParser();
     private static final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("JavaScript");
 
-    private Map<Long, int[]> rollStats;
-
-    private final JDA jda;
+    private RollStatsManager rollStatsManager;
 
     public DiceBot() throws LoginException, IOException {
         JDABuilder builder = new JDABuilder(ApiKeyHelper.getApiKey());
 
-        jda = builder
+        JDA jda = builder
                 .setBulkDeleteSplittingEnabled(false)
                 .setCompression(Compression.NONE)
                 .setActivity(Activity.playing("Pen&Paper"))
                 .addEventListeners(this)
                 .build();
-        rollStats = new HashMap<>();
+
+        rollStatsManager = new RollStatsManager();
 
         while (true) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -54,42 +50,38 @@ public class DiceBot extends ListenerAdapter {
         }
     }
 
-    private int[] getStatsByUser(User user) {
-        if (!rollStats.containsKey(user.getIdLong()))
-            rollStats.put(user.getIdLong(), new int[20]);
-        return rollStats.get(user.getIdLong());
-    }
-
-    private void addToRollStats(User user, Roll roll) {
-        ++getStatsByUser(user)[roll.getRoll() - 1];
-    }
-
     private void getRollStats(User user, MessageChannel channel, Message message) {
-        int[] stats = getStatsByUser(user);
+        int[] stats = rollStatsManager.getStatsByUser(user);
         int count = 0;
         int sum = 0;
         StringBuilder rollsAsString = new StringBuilder();
-        for(int i = 0; i < 20; ++i) {
+        for (int i = 0; i < 20; ++i) {
             count += stats[i];
             sum += stats[i]  * (i + 1);
             rollsAsString.append(i + 1).append(": ").append(stats[i]).append("\n");
         }
         float mean = (sum * 1.0f) / (count * 1.0f);
-        channel.sendMessage("Stats of User: " + user.getAsMention() + "\n" + rollsAsString + " Mean: " + mean).queue();
+        channel
+                .sendMessage("Stats of User: " + user.getAsMention() + "\n" + rollsAsString + " Mean: " + mean)
+                .queue();
         message.delete().queue();
     }
 
     @Override
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
         String input = event.getMessage().getContentRaw();
+        if (!input.startsWith(COMMAND_PREFIX))
+            return;
 
         if (input.equals(COMMAND_PREFIX + "p")) {
-            probe(event.getAuthor(), event.getChannel(), event.getMessage());
+            probeTdc(event.getAuthor(), event.getChannel(), event.getMessage());
             return;
         }
 
         if (input.equals(COMMAND_PREFIX + "info") || input.equals(COMMAND_PREFIX + "help")) {
-            event.getChannel().sendMessage("I am open source!\nView: https://github.com/tobiasmiosczka/DiceBot").queue();
+            event.getChannel()
+                    .sendMessage("I am open source!\nView: https://github.com/tobiasmiosczka/DiceBot")
+                    .queue();
             return;
         }
 
@@ -103,8 +95,13 @@ public class DiceBot extends ListenerAdapter {
             return;
         }
 
-        if (input.startsWith(COMMAND_PREFIX + "r")) {
+        if (input.startsWith(COMMAND_PREFIX + "r ")) {
             roll(event.getAuthor(), event.getChannel(), event.getMessage());
+            return;
+        }
+
+        if (input.equals(COMMAND_PREFIX + "r")) {
+            event.getChannel().sendMessage(event.getAuthor().getAsMention() + ": Roll what?:thinking:").queue();
             return;
         }
     }
@@ -131,9 +128,9 @@ public class DiceBot extends ListenerAdapter {
     }
 
 
-    private void probe(User author, MessageChannel messageChannel, Message message) {
+    private void probeDsa5(User author, MessageChannel messageChannel, Message message) {
         Roll[] rolls = new Dice(20).roll(3);
-        Arrays.stream(rolls).forEach(roll -> addToRollStats(author, roll));
+        rollStatsManager.addToRollStats(author, rolls);
 
         boolean crit = ((rolls[0].getRoll() == 1 && rolls[1].getRoll() == 1) ||
                         (rolls[1].getRoll() == 1 && rolls[2].getRoll() == 1) ||
@@ -152,15 +149,26 @@ public class DiceBot extends ListenerAdapter {
         message.delete().queue();
     }
 
+    private void probeTdc(User author, MessageChannel messageChannel, Message message) {
+        Roll[] rolls = new Dice(20).roll(2);
+        rollStatsManager.addToRollStats(author, rolls);
+
+        boolean crit = (rolls[0].getRoll() == 1 && rolls[1].getRoll() == 1);
+        boolean miss = (rolls[0].getRoll() == 20 && rolls[1].getRoll() == 20);
+
+        messageChannel.sendMessage(
+                author.getAsMention()
+                        + ": " + rolls[0] + rolls[1] + " = " + Roll.sum(rolls)
+                        + (crit ? " Critical hit!:partying_face: " : "")
+                        + (miss ? " Critical miss!:see_no_evil: " : "")
+        ).queue();
+        message.delete().queue();
+    }
 
     private void roll(User author, MessageChannel messageChannel, Message message) {
         String input = message.getContentRaw()
                 .replace(COMMAND_PREFIX + "r", "")
                 .trim();
-        if (input.isEmpty()) {
-            messageChannel.sendMessage(author.getAsMention() + ": Roll what?:thinking:").queue();
-            return;
-        }
         try {
             String rolls = diceNotationParser.parseDiceNotation(input);
             String formula = diceNotationParser.parseRollNotation(rolls);

@@ -1,6 +1,5 @@
 package com.github.tobiasmiosczka.dicebot;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DiceNotationParser {
@@ -11,22 +10,15 @@ public class DiceNotationParser {
     final Pattern dicePattern = Pattern.compile(REGEX_DICE);
 
     public String parseDiceNotation(String input) {
-        String result = input;
-
-        //replace dices with rolls
-        Matcher matcher = dicePattern.matcher(result);
-        result = matcher.replaceAll((a) -> parseDice(a.group()));
-        return result;
+        return dicePattern
+                .matcher(input)
+                .replaceAll((a) -> parseDice(a.group()));
     }
 
     public String parseRollNotation(String input) {
-        String result = input;
-
-        result = result.replaceAll("]\\[", "+");
-        result = result.replaceAll("\\[", "(");
-        result = result.replaceAll("]", ")");
-
-        return result;
+        return input.replaceAll("]\\[", "+")
+                .replaceAll("\\[", "(")
+                .replaceAll("]", ")");
     }
 
     private String parseDice(String input) {

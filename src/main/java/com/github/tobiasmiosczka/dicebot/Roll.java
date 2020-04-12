@@ -1,5 +1,7 @@
 package com.github.tobiasmiosczka.dicebot;
 
+import java.util.Arrays;
+
 public class Roll {
 
     private final int roll;
@@ -15,5 +17,12 @@ public class Roll {
     @Override
     public String toString() {
         return "[" + this.roll + "]";
+    }
+
+    public static int sum(Roll...rolls) {
+        return Arrays.stream(rolls)
+                .map(Roll::getRoll)
+                .reduce(Integer::sum)
+                .get();
     }
 }
