@@ -4,7 +4,6 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.ChannelType;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -25,7 +24,6 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 public class DiceBot extends ListenerAdapter {
 
@@ -66,7 +64,7 @@ public class DiceBot extends ListenerAdapter {
         ++getStatsByUser(user)[roll.getRoll() - 1];
     }
 
-    private void getRollStats(User user, MessageChannel channel) {
+    private void getRollStats(User user, MessageChannel channel, Message message) {
         int[] stats = getStatsByUser(user);
         int count = 0;
         int sum = 0;
@@ -78,50 +76,62 @@ public class DiceBot extends ListenerAdapter {
         }
         float mean = (sum * 1.0f) / (count * 1.0f);
         channel.sendMessage("Stats of User: " + user.getAsMention() + "\n" + rollsAsString + " Mean: " + mean).queue();
+        message.delete().queue();
     }
 
     @Override
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
         String input = event.getMessage().getContentRaw();
-        if (input.startsWith(COMMAND_PREFIX + "r "))
-            roll(event.getAuthor(), event.getChannel(), event.getMessage());
 
-        if (input.equals(COMMAND_PREFIX + "p"))
-            p(event.getAuthor(), event.getChannel(), event.getMessage());
+        if (input.equals(COMMAND_PREFIX + "p")) {
+            probe(event.getAuthor(), event.getChannel(), event.getMessage());
+            return;
+        }
 
-        if (input.equals(COMMAND_PREFIX + "info") || input.equals(COMMAND_PREFIX + "help"))
+        if (input.equals(COMMAND_PREFIX + "info") || input.equals(COMMAND_PREFIX + "help")) {
             event.getChannel().sendMessage("I am open source!\nView: https://github.com/tobiasmiosczka/DiceBot").queue();
+            return;
+        }
 
-        if (input.equals(COMMAND_PREFIX + "ru"))
-           getRandomUser(event.getChannel(), event.getAuthor());
+        if (input.equals(COMMAND_PREFIX + "ru")) {
+            getRandomUser(event.getChannel(), event.getAuthor(), event.getMessage());
+            return;
+        }
 
-        if (input.equals(COMMAND_PREFIX + "pstats"))
-            getRollStats(event.getAuthor(), event.getChannel());
+        if (input.equals(COMMAND_PREFIX + "pstats")) {
+            getRollStats(event.getAuthor(), event.getChannel(), event.getMessage());
+            return;
+        }
 
+        if (input.startsWith(COMMAND_PREFIX + "r")) {
+            roll(event.getAuthor(), event.getChannel(), event.getMessage());
+            return;
+        }
     }
 
-    private void getRandomUser(MessageChannel messageChannel, User author) {
+    private void getRandomUser(MessageChannel messageChannel, User author, Message message) {
         if(messageChannel.getType() != ChannelType.TEXT) {
             messageChannel.sendMessage("This command can only be performed on a text channel. :L").queue();
             return;
         }
-        for (Guild guild : jda.getGuilds()) {
-            for (VoiceChannel voiceChannel : guild.getVoiceChannels()) {
-                if (voiceChannel.getMembers().stream().anyMatch(m -> m.getUser().getIdLong() == author.getIdLong())) {
-                    Random r = new Random();
-                    Member randomMember = voiceChannel.getMembers().get(r.nextInt(voiceChannel.getMembers().size()));
-                    if (randomMember.getGuild().getIdLong() == ((TextChannel) messageChannel).getGuild().getIdLong()) {
-                        messageChannel.sendMessage("Random User: " + randomMember.getAsMention()).queue();
-                        return;
-                    }
-                }
-            }
+
+        VoiceChannel voiceChannel = JdaHelper.getVoiceChannelWithMember(author);
+        if (voiceChannel == null || voiceChannel.getGuild().getIdLong() != ((TextChannel)messageChannel).getGuild().getIdLong()) {
+            messageChannel.sendMessage("You must be in a voice channel to perform this command. :L").queue();
+            return;
         }
-        messageChannel.sendMessage("You must be in a voice channel to perform this command. :L").queue();
+
+        Member randomMember = JdaHelper.getRandomMember(voiceChannel);
+        if (randomMember == null) {
+            messageChannel.sendMessage("VoiceChannel is Empty.").queue();
+            return;
+        }
+        messageChannel.sendMessage("Random User: " + randomMember.getAsMention()).queue();
+        message.delete().queue();
     }
 
 
-    private void p(User author, MessageChannel messageChannel, Message message) {
+    private void probe(User author, MessageChannel messageChannel, Message message) {
         Roll[] rolls = new Dice(20).roll(3);
         Arrays.stream(rolls).forEach(roll -> addToRollStats(author, roll));
 
@@ -136,8 +146,8 @@ public class DiceBot extends ListenerAdapter {
         messageChannel.sendMessage(
                 author.getAsMention()
                 + ": " + rolls[0] + rolls[1] + rolls[2]
-                + (crit ? " Critical hit, you're the best! :)" : "")
-                + (miss ? " Critical miss, oops... :(" : "")
+                + (crit ? " Critical hit!:partying_face: " : "")
+                + (miss ? " Critical miss!:see_no_evil: " : "")
         ).queue();
         message.delete().queue();
     }
@@ -148,7 +158,7 @@ public class DiceBot extends ListenerAdapter {
                 .replace(COMMAND_PREFIX + "r", "")
                 .trim();
         if (input.isEmpty()) {
-            messageChannel.sendMessage("Roll what?").queue();
+            messageChannel.sendMessage(author.getAsMention() + ": Roll what?:thinking:").queue();
             return;
         }
         try {
@@ -162,7 +172,7 @@ public class DiceBot extends ListenerAdapter {
             message.delete().queue();
         } catch (Exception e) {
             messageChannel.sendMessage(
-                    "\n" + author.getAsMention() + ": `" + input + "`\n" + "Sorry, something went wrong. :("
+                    "\n" + author.getAsMention() + ": `" + input + "`\n" + "Sorry, something went wrong.:thinking:"
             ).queue();
             e.printStackTrace();
         }
