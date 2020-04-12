@@ -22,3 +22,10 @@ Returns the players statistics of all !p rolls.
 !ru
 -
 Returns a random user of the voice channel.
+
+!info !help
+-
+Returns a link to this page.
+
+Licence
+=

@@ -29,11 +29,10 @@ import java.util.Random;
 
 public class DiceBot extends ListenerAdapter {
 
-    private static final DiceNotationParser diceNotationParser = new DiceNotationParser();
-    private static final ScriptEngineManager mgr = new ScriptEngineManager();
-    private static final ScriptEngine engine = mgr.getEngineByName("JavaScript");
-
     private static final String COMMAND_PREFIX = "!";
+
+    private static final DiceNotationParser diceNotationParser = new DiceNotationParser();
+    private static final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("JavaScript");
 
     private Map<Long, int[]> rollStats;
 
@@ -48,7 +47,6 @@ public class DiceBot extends ListenerAdapter {
                 .setActivity(Activity.playing("Pen&Paper"))
                 .addEventListeners(this)
                 .build();
-
         rollStats = new HashMap<>();
 
         while (true) {
@@ -58,16 +56,18 @@ public class DiceBot extends ListenerAdapter {
         }
     }
 
-    private void addToRollStats(User user, Roll roll) {
+    private int[] getStatsByUser(User user) {
         if (!rollStats.containsKey(user.getIdLong()))
             rollStats.put(user.getIdLong(), new int[20]);
-        ++rollStats.get(user.getIdLong())[roll.getRoll()-1];
+        return rollStats.get(user.getIdLong());
+    }
+
+    private void addToRollStats(User user, Roll roll) {
+        ++getStatsByUser(user)[roll.getRoll() - 1];
     }
 
     private void getRollStats(User user, MessageChannel channel) {
-        if (!rollStats.containsKey(user.getIdLong()))
-            rollStats.put(user.getIdLong(), new int[20]);
-        int[] stats = rollStats.get(user.getIdLong());
+        int[] stats = getStatsByUser(user);
         int count = 0;
         int sum = 0;
         StringBuilder rollsAsString = new StringBuilder();
@@ -87,9 +87,9 @@ public class DiceBot extends ListenerAdapter {
             roll(event.getAuthor(), event.getChannel(), event.getMessage());
 
         if (input.equals(COMMAND_PREFIX + "p"))
-            p(event.getAuthor(), event.getChannel());
+            p(event.getAuthor(), event.getChannel(), event.getMessage());
 
-        if (input.equals(COMMAND_PREFIX + "info"))
+        if (input.equals(COMMAND_PREFIX + "info") || input.equals(COMMAND_PREFIX + "help"))
             event.getChannel().sendMessage("I am open source!\nView: https://github.com/tobiasmiosczka/DiceBot").queue();
 
         if (input.equals(COMMAND_PREFIX + "ru"))
@@ -121,7 +121,7 @@ public class DiceBot extends ListenerAdapter {
     }
 
 
-    private void p(User author, MessageChannel messageChannel) {
+    private void p(User author, MessageChannel messageChannel, Message message) {
         Roll[] rolls = new Dice(20).roll(3);
         Arrays.stream(rolls).forEach(roll -> addToRollStats(author, roll));
 
@@ -139,6 +139,7 @@ public class DiceBot extends ListenerAdapter {
                 + (crit ? " Critical hit, you're the best! :)" : "")
                 + (miss ? " Critical miss, oops... :(" : "")
         ).queue();
+        message.delete().queue();
     }
 
 
@@ -153,19 +154,15 @@ public class DiceBot extends ListenerAdapter {
         try {
             String rolls = diceNotationParser.parseDiceNotation(input);
             String formula = diceNotationParser.parseRollNotation(rolls);
-            String result = "" + engine.eval(formula);
+            String result = "" + scriptEngine.eval(formula);
 
             messageChannel.sendMessage(
-                    "\n"
-                            + author.getAsMention() + ": `" + input + "`\n"
-                            + rolls + " = __" + result + "__"
+                    "\n" + author.getAsMention() + ": `" + input + "`\n" + rolls + " = __" + result + "__"
             ).queue();
-
+            message.delete().queue();
         } catch (Exception e) {
             messageChannel.sendMessage(
-                    "\n"
-                            + author.getAsMention() + ": `" + input + "`\n"
-                            + "Sorry, something went wrong. :("
+                    "\n" + author.getAsMention() + ": `" + input + "`\n" + "Sorry, something went wrong. :("
             ).queue();
             e.printStackTrace();
         }
