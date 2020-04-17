@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class RollStatsManager {
 
-    private Map<Long, int[]> rollStats;
+    private final Map<Long, int[]> rollStats;
 
     public RollStatsManager() {
         rollStats = new HashMap<>();

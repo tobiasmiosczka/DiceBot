@@ -25,4 +25,11 @@ public class Roll {
                 .reduce(Integer::sum)
                 .get();
     }
+
+    public static String toString(Roll...rolls) {
+        return Arrays.stream(rolls)
+                .map(r -> r.toString())
+                .reduce(String::concat)
+                .get();
+    }
 }

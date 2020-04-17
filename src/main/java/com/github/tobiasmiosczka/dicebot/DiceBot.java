@@ -21,6 +21,7 @@ import javax.security.auth.login.LoginException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 public class DiceBot extends ListenerAdapter {
 
@@ -32,9 +33,8 @@ public class DiceBot extends ListenerAdapter {
     private RollStatsManager rollStatsManager;
 
     public DiceBot() throws LoginException, IOException {
-        JDABuilder builder = new JDABuilder(ApiKeyHelper.getApiKey());
 
-        JDA jda = builder
+        JDA jda = new JDABuilder(ApiKeyHelper.getApiKey())
                 .setBulkDeleteSplittingEnabled(false)
                 .setCompression(Compression.NONE)
                 .setActivity(Activity.playing("Pen&Paper"))
@@ -50,10 +50,9 @@ public class DiceBot extends ListenerAdapter {
         }
     }
 
-    private void getRollStats(User user, MessageChannel channel, Message message) {
+    private boolean getRollStats(User user, MessageChannel channel) {
         int[] stats = rollStatsManager.getStatsByUser(user);
-        int count = 0;
-        int sum = 0;
+        int count = 0, sum = 0;
         StringBuilder rollsAsString = new StringBuilder();
         for (int i = 0; i < 20; ++i) {
             count += stats[i];
@@ -61,10 +60,8 @@ public class DiceBot extends ListenerAdapter {
             rollsAsString.append(i + 1).append(": ").append(stats[i]).append("\n");
         }
         float mean = (sum * 1.0f) / (count * 1.0f);
-        channel
-                .sendMessage("Stats of User: " + user.getAsMention() + "\n" + rollsAsString + " Mean: " + mean)
-                .queue();
-        message.delete().queue();
+        channel.sendMessage("Stats of User: " + user.getAsMention() + "\n" + rollsAsString + " Mean: " + mean).queue();
+        return true;
     }
 
     @Override
@@ -73,62 +70,74 @@ public class DiceBot extends ListenerAdapter {
         if (!input.startsWith(COMMAND_PREFIX))
             return;
 
-        if (input.equals(COMMAND_PREFIX + "p")) {
-            probeTdc(event.getAuthor(), event.getChannel(), event.getMessage());
+        input = input.substring(1).trim().replaceAll(" +", " ");
+
+        String[] strings = input.split(" ");
+
+        if (strings.length == 0)
             return;
+
+        String command = strings[0];
+        String[] args = Arrays.copyOfRange(strings, 1, strings.length);
+
+        executeCommand(command, args, event.getAuthor(), event.getTextChannel(), event.getMessage());
+    }
+
+    private void executeCommand(String command, String[] args, User author, TextChannel channel, Message message) {
+        boolean result = false;
+        if (command.equals("p")) {
+            result = probeTdc(author, channel);
         }
 
-        if (input.equals(COMMAND_PREFIX + "info") || input.equals(COMMAND_PREFIX + "help")) {
-            event.getChannel()
-                    .sendMessage("I am open source!\nView: https://github.com/tobiasmiosczka/DiceBot")
-                    .queue();
-            return;
+        if (command.equals("info") || command.equals("help")) {
+            result = info(channel);
         }
 
-        if (input.equals(COMMAND_PREFIX + "ru")) {
-            getRandomUser(event.getChannel(), event.getAuthor(), event.getMessage());
-            return;
+        if (command.equals("ru")) {
+            result = getRandomUser(channel, author);
         }
 
-        if (input.equals(COMMAND_PREFIX + "pstats")) {
-            getRollStats(event.getAuthor(), event.getChannel(), event.getMessage());
-            return;
+        if (command.equals("pstats")) {
+            result = getRollStats(author, channel);
         }
 
-        if (input.startsWith(COMMAND_PREFIX + "r ")) {
-            roll(event.getAuthor(), event.getChannel(), event.getMessage());
-            return;
+        if (command.equals("r")) {
+            result = roll((args.length > 0) ? args[0] : "", author, channel);
         }
 
-        if (input.equals(COMMAND_PREFIX + "r")) {
-            event.getChannel().sendMessage(event.getAuthor().getAsMention() + ": Roll what?:thinking:").queue();
-            return;
+        if (result) {
+            message.delete().queue();
         }
     }
 
-    private void getRandomUser(MessageChannel messageChannel, User author, Message message) {
+    private boolean info(TextChannel channel) {
+        channel.sendMessage("I am open source!\nView: https://github.com/tobiasmiosczka/DiceBot").queue();
+        return true;
+    }
+
+    private boolean getRandomUser(MessageChannel messageChannel, User author) {
         if(messageChannel.getType() != ChannelType.TEXT) {
             messageChannel.sendMessage("This command can only be performed on a text channel. :L").queue();
-            return;
+            return false;
         }
 
         VoiceChannel voiceChannel = JdaHelper.getVoiceChannelWithMember(author);
         if (voiceChannel == null || voiceChannel.getGuild().getIdLong() != ((TextChannel)messageChannel).getGuild().getIdLong()) {
             messageChannel.sendMessage("You must be in a voice channel to perform this command. :L").queue();
-            return;
+            return false;
         }
 
         Member randomMember = JdaHelper.getRandomMember(voiceChannel);
         if (randomMember == null) {
             messageChannel.sendMessage("VoiceChannel is Empty.").queue();
-            return;
+            return false;
         }
         messageChannel.sendMessage("Random User: " + randomMember.getAsMention()).queue();
-        message.delete().queue();
+        return true;
     }
 
 
-    private void probeDsa5(User author, MessageChannel messageChannel, Message message) {
+    private boolean probeDsa5(User author, MessageChannel messageChannel) {
         Roll[] rolls = new Dice(20).roll(3);
         rollStatsManager.addToRollStats(author, rolls);
 
@@ -142,14 +151,13 @@ public class DiceBot extends ListenerAdapter {
 
         messageChannel.sendMessage(
                 author.getAsMention()
-                + ": " + rolls[0] + rolls[1] + rolls[2]
+                + ": " + Roll.toString(rolls)
                 + (crit ? " Critical hit!:partying_face: " : "")
-                + (miss ? " Critical miss!:see_no_evil: " : "")
-        ).queue();
-        message.delete().queue();
+                + (miss ? " Critical miss!:see_no_evil: " : "")).queue();
+        return true;
     }
 
-    private void probeTdc(User author, MessageChannel messageChannel, Message message) {
+    private boolean probeTdc(User author, MessageChannel messageChannel) {
         Roll[] rolls = new Dice(20).roll(2);
         rollStatsManager.addToRollStats(author, rolls);
 
@@ -158,31 +166,28 @@ public class DiceBot extends ListenerAdapter {
 
         messageChannel.sendMessage(
                 author.getAsMention()
-                        + ": " + rolls[0] + rolls[1] + " = " + Roll.sum(rolls)
+                        + ": " + Roll.toString(rolls) + " = " + Roll.sum(rolls)
                         + (crit ? " Critical hit!:partying_face: " : "")
-                        + (miss ? " Critical miss!:see_no_evil: " : "")
-        ).queue();
-        message.delete().queue();
+                        + (miss ? " Critical miss!:see_no_evil: " : "")).queue();
+        return true;
     }
 
-    private void roll(User author, MessageChannel messageChannel, Message message) {
-        String input = message.getContentRaw()
-                .replace(COMMAND_PREFIX + "r", "")
-                .trim();
+    private boolean roll(String arg, User author, MessageChannel messageChannel) {
+        if (arg == null || arg.equals("")) {
+            messageChannel.sendMessage("Roll what?").queue();
+            return false;
+        }
         try {
-            String rolls = diceNotationParser.parseDiceNotation(input);
+            String rolls = diceNotationParser.parseDiceNotation(arg);
             String formula = diceNotationParser.parseRollNotation(rolls);
             String result = "" + scriptEngine.eval(formula);
 
-            messageChannel.sendMessage(
-                    "\n" + author.getAsMention() + ": `" + input + "`\n" + rolls + " = __" + result + "__"
-            ).queue();
-            message.delete().queue();
+            messageChannel.sendMessage("\n" + author.getAsMention() + ": `" + arg + "`\n" + rolls + " = __" + result + "__").queue();
+            return true;
         } catch (Exception e) {
-            messageChannel.sendMessage(
-                    "\n" + author.getAsMention() + ": `" + input + "`\n" + "Sorry, something went wrong.:thinking:"
-            ).queue();
+            messageChannel.sendMessage("\n" + author.getAsMention() + ": `" + arg + "`\n" + "Sorry, something went wrong.:thinking:").queue();
             e.printStackTrace();
+            return false;
         }
     }
 }
