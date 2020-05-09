@@ -37,7 +37,7 @@ public class DiceBot extends ListenerAdapter {
         JDA jda = new JDABuilder(ApiKeyHelper.getApiKey())
                 .setBulkDeleteSplittingEnabled(false)
                 .setCompression(Compression.NONE)
-                .setActivity(Activity.playing("Pen&Paper"))
+                .setActivity(Activity.playing("Pen & Paper"))
                 .addEventListeners(this)
                 .build();
 
@@ -86,7 +86,7 @@ public class DiceBot extends ListenerAdapter {
     private void executeCommand(String command, String[] args, User author, TextChannel channel, Message message) {
         boolean result = false;
         if (command.equals("p")) {
-            result = probeTdc(author, channel);
+            result = probeDsa5(author, channel);
         }
 
         if (command.equals("info") || command.equals("help")) {
@@ -102,7 +102,7 @@ public class DiceBot extends ListenerAdapter {
         }
 
         if (command.equals("r")) {
-            result = roll((args.length > 0) ? args[0] : "", author, channel);
+            result = roll(Arrays.stream(args).reduce((a, b) -> a + " " + b).get(), author, channel);
         }
 
         if (result) {

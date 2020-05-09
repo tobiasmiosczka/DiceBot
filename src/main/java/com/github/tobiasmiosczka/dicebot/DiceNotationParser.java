@@ -15,6 +15,7 @@ public class DiceNotationParser {
                 .replaceAll((a) -> parseDice(a.group()));
     }
 
+
     public String parseRollNotation(String input) {
         return input.replaceAll("]\\[", "+")
                 .replaceAll("\\[", "(")
