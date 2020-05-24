@@ -34,7 +34,6 @@ public class CommandEngine extends ListenerAdapter {
         for (Class c : classes) {
             if (!CommandFunction.class.isAssignableFrom(c))
                 continue;
-            System.out.println(c.getName());
             Command commandAnnotation = (Command)c.getAnnotation(Command.class);
             if (commandAnnotation == null)
                 continue;
@@ -57,8 +56,6 @@ public class CommandEngine extends ListenerAdapter {
         int p = input.indexOf(" ");
         String commandString = (p == -1) ? input : input.substring(0, p);
         String arg = (p == -1) ? "" : input.substring(p + 1);
-
-        System.out.println(commandString + " | " + arg);
 
         CommandFunction command = commands.get(commandString);
         if (command == null)
