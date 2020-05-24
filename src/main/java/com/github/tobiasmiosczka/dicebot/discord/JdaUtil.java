@@ -1,6 +1,5 @@
-package com.github.tobiasmiosczka.dicebot;
+package com.github.tobiasmiosczka.dicebot.discord;
 
-import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
@@ -8,13 +7,12 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 
 import java.util.Random;
 
-public class JdaHelper {
+public class JdaUtil {
 
     private static final Random r = new Random();
 
     public static VoiceChannel getVoiceChannelWithMember(User member) {
-        JDA jda = member.getJDA();
-        for (Guild guild : jda.getGuilds()) {
+        for (Guild guild : member.getJDA().getGuilds()) {
             for (VoiceChannel voiceChannel : guild.getVoiceChannels()) {
                 if (voiceChannel.getMembers().stream().anyMatch(m -> m.getUser().getIdLong() == member.getIdLong()))
                     return voiceChannel;

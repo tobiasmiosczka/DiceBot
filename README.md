@@ -1,5 +1,5 @@
 # DiceBot
-State of the art Discord dice bot. 
+State-of-the-art Discord dice bot. 
 
 Commands
 =
@@ -15,11 +15,7 @@ This command also supports the full [JavaScript/ECMAScript][1] language.
 
 !p 
 -
-Returns the result of 3d20 roll. Additionally shows if a critical hit or miss occurred according to the rules of [TDE5][2]. 
-
-!pstats
--
-Returns the players statistics of all !p rolls. 
+Returns the result of 3d20 rolls and shows if a critical hit or miss occurred according to the rules of [TDE5][2]. 
 
 !ru
 -

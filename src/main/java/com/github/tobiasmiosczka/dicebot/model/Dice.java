@@ -1,4 +1,4 @@
-package com.github.tobiasmiosczka.dicebot;
+package com.github.tobiasmiosczka.dicebot.model;
 
 import java.util.Random;
 
