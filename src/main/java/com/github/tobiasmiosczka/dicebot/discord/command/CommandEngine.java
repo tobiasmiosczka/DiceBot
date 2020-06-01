@@ -1,6 +1,7 @@
 package com.github.tobiasmiosczka.dicebot.discord.command;
 
 import com.github.tobiasmiosczka.dicebot.reflection.ReflectionUtil;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -12,32 +13,32 @@ import java.util.Map;
 
 public class CommandEngine extends ListenerAdapter {
 
-    private static final String COMMAND_PREFIX = "!";
-    private final Map<String, CommandFunction> commands = new HashMap<>();
+    private static final String COMMAND_PREFIX = "/";
+    private final long SELF_USER_ID_LONG;
+    private final Map<String, CommandFunction> commands;
 
-    public CommandEngine(String commandsPackage) {
+    public CommandEngine(String commandsPackage, JDA jda) {
+        commands = new HashMap<>();
+        this.SELF_USER_ID_LONG = jda.getSelfUser().getIdLong();
         try {
             addCommands(commandsPackage);
-        } catch (IllegalAccessException | IOException | NoSuchMethodException | InvocationTargetException | InstantiationException | ClassNotFoundException e) {
+        } catch (IllegalAccessException | IOException | NoSuchMethodException | InvocationTargetException | InstantiationException e) {
             e.printStackTrace();
         }
     }
 
-    private void addCommand(String commandString, CommandFunction commandFunction) {
+    public void addCommand(String commandString, CommandFunction commandFunction) {
         if (commands.containsKey(commandString))
             throw new DuplicateCommandException(commandFunction.getClass(), commandString);
         commands.put(commandString, commandFunction);
     }
 
-    private void addCommands(String commandsPackage) throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, ClassNotFoundException {
-        Class[] classes = ReflectionUtil.getClasses(commandsPackage);
-        for (Class c : classes) {
-            if (!CommandFunction.class.isAssignableFrom(c))
-                continue;
-            Command commandAnnotation = (Command)c.getAnnotation(Command.class);
+    private void addCommands(String commandsPackage) throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        for (Class<? extends CommandFunction> c : ReflectionUtil.getClassesImplementing(commandsPackage, CommandFunction.class)) {
+            Command commandAnnotation = c.getAnnotation(Command.class);
             if (commandAnnotation == null)
                 continue;
-            CommandFunction command = (CommandFunction)c.getDeclaredConstructor().newInstance();
+            CommandFunction command = c.getDeclaredConstructor().newInstance();
             addCommand(commandAnnotation.command(), command);
         }
     }
@@ -49,6 +50,9 @@ public class CommandEngine extends ListenerAdapter {
                 .replaceAll(" +", " ");
 
         if (!input.startsWith(COMMAND_PREFIX))
+            return;
+
+        if (event.getAuthor().getIdLong() == SELF_USER_ID_LONG)
             return;
 
         input = input.substring(COMMAND_PREFIX.length());

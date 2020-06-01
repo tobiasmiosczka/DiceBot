@@ -14,7 +14,9 @@ public class DiscordApiTokenUtil {
         InputStream input = url.openStream();
         Properties prop = new Properties();
         prop.load(input);
-        return prop.getProperty("api.token");
+        String token = prop.getProperty("api.token");
+        input.close();
+        return token;
     }
 
 }

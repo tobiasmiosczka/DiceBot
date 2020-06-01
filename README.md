@@ -27,7 +27,7 @@ Returns a link to this page.
 
 Licence
 =
-This software is licenced under the MIT licence. The full licence text is in [Licence][3]. 
+The full licence text is in [Licence][3]. 
 
 [1]: https://www.ecma-international.org/ecma-262/10.0/
 [2]: https://ulisses-regelwiki.de/

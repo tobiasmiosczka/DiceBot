@@ -5,7 +5,7 @@ import com.github.tobiasmiosczka.dicebot.discord.command.Command;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
 
-@Command(command = "info")
+@Command(command = "info", helpText = "Shows information about the Bot.")
 public class InfoCommand implements CommandFunction {
     @Override
     public boolean performCommand(String arg, User author, MessageChannel messageChannel) {

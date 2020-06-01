@@ -6,37 +6,44 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ReflectionUtil {
-    public static  Class[] getClasses(String packageName) throws IOException, ClassNotFoundException {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        assert classLoader != null;
-        String path = packageName.replace('.', '/');
-        Enumeration<URL> resources = classLoader.getResources(path);
-        List<File> dirs = new ArrayList<>();
-        while (resources.hasMoreElements()) {
-            URL resource = resources.nextElement();
-            dirs.add(new File(resource.getFile()));
-        }
-        ArrayList<Class> classes = new ArrayList<>();
-        for (File directory : dirs) {
-            classes.addAll(findClasses(directory, packageName));
-        }
-        return classes.toArray(new Class[0]);
+
+    public static <T> List<Class<? extends T>> getClassesImplementing(String packageName, Class<? extends T> implementedInterface) throws IOException {
+        return getClasses(packageName).stream()
+                .filter(implementedInterface::isAssignableFrom)
+                .map(a -> (Class<? extends T>)a)
+                .collect(Collectors.toList());
     }
 
-    private static List<Class> findClasses(File directory, String packageName) throws ClassNotFoundException {
-        List<Class> classes = new ArrayList<>();
-        if (!directory.exists()) {
-            return classes;
+    public static  List<Class<?>> getClasses(String packageName) throws IOException {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        Enumeration<URL> resources = classLoader.getResources(packageName.replace('.', '/'));
+        List<File> dirs = new ArrayList<>();
+        while (resources.hasMoreElements()) {
+            dirs.add(new File(resources.nextElement().getFile()));
         }
-        File[] files = directory.listFiles();
-        for (File file : files) {
+        return dirs.stream()
+                .map(directory -> findClasses(directory, packageName))
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+    }
+
+    private static List<Class<?>> findClasses(File directory, String packageName) {
+        if (!directory.exists()) {
+            return new ArrayList<>();
+        }
+        List<Class<?>> classes = new ArrayList<>();
+        for (File file : directory.listFiles()) {
             if (file.isDirectory()) {
-                assert !file.getName().contains(".");
                 classes.addAll(findClasses(file, packageName + "." + file.getName()));
             } else if (file.getName().endsWith(".class")) {
-                classes.add(Class.forName(packageName + '.' + file.getName().substring(0, file.getName().length() - 6)));
+                try {
+                    classes.add(Class.forName(packageName + '.' + file.getName().substring(0, file.getName().length() - 6)));
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return classes;

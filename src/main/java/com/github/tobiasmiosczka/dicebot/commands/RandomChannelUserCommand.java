@@ -10,8 +10,8 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
-@Command(command = "ru")
-public class RandomUserCommand implements CommandFunction {
+@Command(command = "rcu", helpText = "Select a random user of the voice channel.")
+public class RandomChannelUserCommand implements CommandFunction {
 
     @Override
     public boolean performCommand(String arg, User author, MessageChannel messageChannel) {
@@ -21,7 +21,6 @@ public class RandomUserCommand implements CommandFunction {
                     .queue();
             return false;
         }
-
         VoiceChannel voiceChannel = JdaUtil.getVoiceChannelWithMember(author);
         if (voiceChannel == null || voiceChannel.getGuild().getIdLong() != ((TextChannel)messageChannel).getGuild().getIdLong()) {
             messageChannel

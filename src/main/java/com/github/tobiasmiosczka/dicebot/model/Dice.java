@@ -13,11 +13,7 @@ public class Dice {
     }
 
     public Roll roll() {
-        return new Roll(getRandomInRange(sides));
-    }
-
-    public static int getRandomInRange(int range) {
-        return RANDOM.nextInt(range) + 1;
+        return new Roll(RANDOM.nextInt(sides) + 1);
     }
 
     public Roll[] roll(int count) {

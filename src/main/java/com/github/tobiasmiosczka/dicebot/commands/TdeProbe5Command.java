@@ -4,10 +4,11 @@ import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import com.github.tobiasmiosczka.dicebot.discord.command.Command;
 import com.github.tobiasmiosczka.dicebot.model.Dice;
 import com.github.tobiasmiosczka.dicebot.model.Roll;
+import com.github.tobiasmiosczka.dicebot.parsing.DiceNotationParser;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
 
-@Command(command = "p")
+@Command(command = "p", helpText = "Performs a probe according to TDE5.")
 public class TdeProbe5Command implements CommandFunction {
 
     @Override
@@ -27,7 +28,7 @@ public class TdeProbe5Command implements CommandFunction {
         messageChannel
                 .sendMessage(
                         author.getAsMention()
-                                + ": " + Roll.rollsToString(rolls)
+                                + ": " + DiceNotationParser.rollsToString(rolls)
                                 + (critical ? " Critical hit!:partying_face: " : "")
                                 + (miss ? " Critical miss!:see_no_evil: " : "")).queue();
         return true;
