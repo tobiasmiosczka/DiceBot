@@ -1,6 +1,6 @@
 package com.github.tobiasmiosczka.dicebot.commands;
 
-import com.github.tobiasmiosczka.dicebot.discord.command.Command;
+import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -15,50 +15,55 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-@Command(command = "t")
+@Command(
+        command = "t",
+        description = "WORK IN PROGRESS"
+)
 public class TimerCommand implements CommandFunction {
 
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1);
 
     private ConcurrentMap<Message, Long> messages;
-    private long couter;
+    private long counter;
 
     public TimerCommand() {
-        couter = 0;
+        counter = 0;
         messages = new ConcurrentHashMap<>();
         SCHEDULER.scheduleAtFixedRate(() -> {
-            ++couter;
+            ++counter;
             for (Map.Entry<Message, Long> entry : messages.entrySet()) {
                 Message message = entry.getKey();
-                long secondsLeft = (entry.getValue() - couter);
+                long secondsLeft = (entry.getValue() - counter);
+                message.editMessage(buildMessage(secondsLeft)).queue();
                 if (secondsLeft <= 0) {
                     messages.remove(message);
                 }
-                message.editMessage(buildMessage(secondsLeft)).queue();
             }
         }, 0, 1, TimeUnit.SECONDS);
     }
 
     private MessageEmbed buildMessage(long secondsLeft) {
-        EmbedBuilder embedBuilder = new EmbedBuilder()
-                .setTitle("Timer")
-                .addField("Time left", secondsLeft + "s.", false);
-        return embedBuilder.build();
+        secondsLeft = Math.max(secondsLeft, 0);
+        EmbedBuilder builder = new EmbedBuilder()
+                .setTitle("Timer" + ((secondsLeft == 0) ? "(Over)" : ""))
+                .setDescription(secondsLeft + "s.");
+        if (secondsLeft > 0)
+            builder.setColor(0x00CC00);
+        return  builder.build();
     }
 
     @Override
     public boolean performCommand(String arg, User author, MessageChannel messageChannel) {
-        int timeInSeconds;
         try {
-            timeInSeconds = Integer.parseInt(arg);
+            int timeInSeconds = Integer.parseInt(arg);
+            Message message = messageChannel.sendMessage(buildMessage(timeInSeconds)).complete();
+            messages.put(message, counter + timeInSeconds);
+            return true;
         } catch (NumberFormatException e) {
             messageChannel
                     .sendMessage("First parameter must be the time to vote in seconds.")
                     .queue();
             return false;
         }
-        Message message = messageChannel.sendMessage(buildMessage(timeInSeconds)).complete();
-        messages.put(message, couter + timeInSeconds);
-        return true;
     }
 }

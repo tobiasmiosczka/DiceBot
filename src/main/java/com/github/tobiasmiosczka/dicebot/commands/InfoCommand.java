@@ -1,7 +1,7 @@
 package com.github.tobiasmiosczka.dicebot.commands;
 
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
-import com.github.tobiasmiosczka.dicebot.discord.command.Command;
+import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
 

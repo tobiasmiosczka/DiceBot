@@ -2,7 +2,7 @@ package com.github.tobiasmiosczka.dicebot.commands;
 
 import com.github.tobiasmiosczka.dicebot.discord.JdaUtil;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
-import com.github.tobiasmiosczka.dicebot.discord.command.Command;
+import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.util.CollectionUtil;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;

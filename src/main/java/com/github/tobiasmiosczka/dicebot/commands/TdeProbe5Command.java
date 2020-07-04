@@ -1,7 +1,7 @@
 package com.github.tobiasmiosczka.dicebot.commands;
 
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
-import com.github.tobiasmiosczka.dicebot.discord.command.Command;
+import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.model.Dice;
 import com.github.tobiasmiosczka.dicebot.model.Roll;
 import com.github.tobiasmiosczka.dicebot.parsing.DiceNotationParser;

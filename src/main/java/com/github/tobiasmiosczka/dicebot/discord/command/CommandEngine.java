@@ -1,5 +1,6 @@
 package com.github.tobiasmiosczka.dicebot.discord.command;
 
+import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.reflection.ReflectionUtil;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -41,40 +42,33 @@ public class CommandEngine extends ListenerAdapter {
     private void addCommands(String commandsPackage) throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         for (Class<? extends CommandFunction> c : ReflectionUtil.getClassesImplementing(commandsPackage, CommandFunction.class)) {
             Command commandAnnotation = c.getAnnotation(Command.class);
-            if (commandAnnotation == null)
-                continue;
-            CommandFunction commandFunction = c.getDeclaredConstructor().newInstance();
-            addCommand(commandAnnotation.command(), commandFunction);
+            if (commandAnnotation != null) {
+                CommandFunction commandFunction = c.getDeclaredConstructor().newInstance();
+                addCommand(commandAnnotation.command(), commandFunction);
+            }
         }
     }
 
     @Override
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
+        if (event.getAuthor().getIdLong() == botId)
+            return;
         String input = event.getMessage().getContentRaw()
                 .trim()
                 .replaceAll(" +", " ");
-
         if (!input.startsWith(commandPrefix))
             return;
-
-        if (event.getAuthor().getIdLong() == botId)
-            return;
-
-        input = input.substring(commandPrefix.length());
-
         int p = input.indexOf(" ");
-        String commandString = (p == -1) ? input : input.substring(0, p);
-        String arg = (p == -1) ? "" : input.substring(p + 1);
-
-        CommandFunction command = commands.get(commandString);
-        if (command == null)
+        String commandString = (p == -1) ? input : input.substring(commandPrefix.length(), p);
+        if (!commands.containsKey(commandString))
             return;
-
+        CommandFunction command = commands.get(commandString);
+        String arg = (p == -1) ? "" : input.substring(p + 1);
         if (command.performCommand(arg, event.getAuthor(), event.getChannel()))
             try {
                 event.getMessage().delete().queue();
             } catch (IllegalStateException | InsufficientPermissionException e) {
-                LOGGER.finer("Couldn't delete a Message");
+                LOGGER.finer("Couldn't delete a Message.");
             }
     }
 }

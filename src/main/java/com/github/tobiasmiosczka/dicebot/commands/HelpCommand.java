@@ -1,7 +1,7 @@
 package com.github.tobiasmiosczka.dicebot.commands;
 
-import com.github.tobiasmiosczka.dicebot.discord.command.Argument;
-import com.github.tobiasmiosczka.dicebot.discord.command.Command;
+import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Argument;
+import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import com.github.tobiasmiosczka.dicebot.reflection.ReflectionUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -35,7 +35,9 @@ public class HelpCommand implements CommandFunction {
     public HelpCommand() {
         commands = new HashMap<>();
         try {
-            for (Class<? extends CommandFunction> c : ReflectionUtil.getClassesImplementing(this.getClass().getPackageName(), CommandFunction.class)) {
+            List<Class<? extends CommandFunction>> classes = ReflectionUtil
+                    .getClassesImplementing(this.getClass().getPackageName(), CommandFunction.class);
+            for (Class<? extends CommandFunction> c : classes) {
                 Command commandAnnotation = c.getAnnotation(Command.class);
                 if (commandAnnotation == null)
                     continue;

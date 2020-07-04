@@ -31,10 +31,10 @@ public class DiceNotationParser {
         return "" + (new ScriptEngineManager().getEngineByName("JavaScript").eval(input));
     }
 
-    public static String calculate(String input, long timeoutNanoSeconds) throws InterruptedException, ExecutionException, TimeoutException {
+    public static String calculate(String input, long timeoutNanoSeconds, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
         return EXECUTOR_SERVICE
                 .submit(() -> calculate(input))
-                .get(timeoutNanoSeconds, TimeUnit.NANOSECONDS);
+                .get(timeoutNanoSeconds, timeUnit);
     }
 
     public static String parseRollNotation(String input) {

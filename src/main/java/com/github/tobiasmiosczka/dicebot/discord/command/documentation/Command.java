@@ -1,4 +1,4 @@
-package com.github.tobiasmiosczka.dicebot.discord.command;
+package com.github.tobiasmiosczka.dicebot.discord.command.documentation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

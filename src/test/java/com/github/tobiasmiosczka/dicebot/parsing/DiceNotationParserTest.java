@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.script.ScriptException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,19 +38,19 @@ class DiceNotationParserTest {
 
     @Test
     void testCalculate() throws InterruptedException, ExecutionException, TimeoutException {
-        assertEquals("2",       DiceNotationParser.calculate("1+1",         10000000000L));
-        assertEquals("null",    DiceNotationParser.calculate("",            10000000000L));
-        assertEquals("4",       DiceNotationParser.calculate("2*2",         10000000000L));
-        assertEquals("18",      DiceNotationParser.calculate("(4+5)*2",     10000000000L));
-        assertEquals("test",    DiceNotationParser.calculate("\"test\"",    10000000000L));
-        assertEquals("true",    DiceNotationParser.calculate("1==1",        10000000000L));
+        assertEquals("2",       DiceNotationParser.calculate("1+1",         10, TimeUnit.SECONDS));
+        assertEquals("null",    DiceNotationParser.calculate("",            10, TimeUnit.SECONDS));
+        assertEquals("4",       DiceNotationParser.calculate("2*2",         10, TimeUnit.SECONDS));
+        assertEquals("18",      DiceNotationParser.calculate("(4+5)*2",     10, TimeUnit.SECONDS));
+        assertEquals("test",    DiceNotationParser.calculate("\"test\"",    10, TimeUnit.SECONDS));
+        assertEquals("true",    DiceNotationParser.calculate("1==1",        10, TimeUnit.SECONDS));
     }
 
     @Test
     void testCalculateTimeoutException() {
         assertThrows(
                 TimeoutException.class,
-                () -> DiceNotationParser.calculate("while(true){}", 10000000000L)
+                () -> DiceNotationParser.calculate("while(true){}", 10, TimeUnit.SECONDS)
         );
     }
 
@@ -57,7 +58,7 @@ class DiceNotationParserTest {
     void testCalculateScriptException() {
         ExecutionException exception = assertThrows(
                 ExecutionException.class,
-                () -> DiceNotationParser.calculate("error", 10000000000L)
+                () -> DiceNotationParser.calculate("error", 10, TimeUnit.SECONDS)
         );
         assertEquals(ScriptException.class, exception.getCause().getClass());
     }

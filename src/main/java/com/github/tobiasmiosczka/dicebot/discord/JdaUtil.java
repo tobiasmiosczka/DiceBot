@@ -19,4 +19,15 @@ public class JdaUtil {
         return "`" + text + "`";
     }
 
+    public static String code(String text) {
+        return "```" + text + "```";
+    }
+
+    public static String underlined(String text) {
+        return "__" + text + "__";
+    }
+
+    public static String crossedOut(String text) {
+        return "~~" + text + "~~";
+    }
 }

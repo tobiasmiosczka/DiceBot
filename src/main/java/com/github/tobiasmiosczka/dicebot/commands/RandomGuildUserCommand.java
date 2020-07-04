@@ -1,6 +1,6 @@
 package com.github.tobiasmiosczka.dicebot.commands;
 
-import com.github.tobiasmiosczka.dicebot.discord.command.Command;
+import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import com.github.tobiasmiosczka.dicebot.util.CollectionUtil;
 import net.dv8tion.jda.api.entities.ChannelType;
@@ -20,7 +20,9 @@ public class RandomGuildUserCommand implements CommandFunction {
     @Override
     public boolean performCommand(String arg, User author, MessageChannel messageChannel) {
         if (messageChannel.getType() != ChannelType.TEXT) {
-            messageChannel.sendMessage("Command must be performed in a text channel.").queue();
+            messageChannel
+                    .sendMessage("Command must be performed in a text channel.")
+                    .queue();
             return false;
         }
         List<Member> memberList = ((TextChannel)messageChannel).getGuild().getMembers();

@@ -1,7 +1,7 @@
 package com.github.tobiasmiosczka.dicebot.commands;
 
 import com.github.tobiasmiosczka.dicebot.discord.JdaUtil;
-import com.github.tobiasmiosczka.dicebot.discord.command.Command;
+import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import net.dv8tion.jda.api.entities.*;
 
@@ -28,7 +28,7 @@ public class RandomChannelUserOrderCommand implements CommandFunction {
         }
         Guild guild = ((TextChannel)messageChannel).getGuild();
         VoiceChannel voiceChannel = JdaUtil.getVoiceChannelWithMember(guild, author);
-        if (voiceChannel == null || voiceChannel.getGuild().getIdLong() != ((TextChannel)messageChannel).getGuild().getIdLong()) {
+        if (voiceChannel == null || voiceChannel.getGuild().getIdLong() != guild.getIdLong()) {
             messageChannel
                     .sendMessage("You must be in a voice channel to perform this command. :L")
                     .queue();
