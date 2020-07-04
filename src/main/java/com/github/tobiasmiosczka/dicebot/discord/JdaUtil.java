@@ -8,14 +8,15 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 public class JdaUtil {
 
     public static VoiceChannel getVoiceChannelWithMember(Guild guild, User user) {
-        for (VoiceChannel voiceChannel : guild.getVoiceChannels()) {
-            for (Member member : voiceChannel.getMembers()) {
-                if (member.getUser().getIdLong() == user.getIdLong()) {
+        for (VoiceChannel voiceChannel : guild.getVoiceChannels())
+            for (Member member : voiceChannel.getMembers())
+                if (member.getUser().getIdLong() == user.getIdLong())
                     return voiceChannel;
-                }
-            }
-        }
         return null;
+    }
+
+    public static String quoted(String text) {
+        return "`" + text + "`";
     }
 
 }

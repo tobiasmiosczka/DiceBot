@@ -3,6 +3,7 @@ package com.github.tobiasmiosczka.dicebot.discord.command;
 import com.github.tobiasmiosczka.dicebot.reflection.ReflectionUtil;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import javax.annotation.Nonnull;
@@ -10,8 +11,11 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class CommandEngine extends ListenerAdapter {
+
+    private static final Logger LOGGER = Logger.getGlobal();
 
     private final String commandPrefix;
     private final long botId;
@@ -67,6 +71,10 @@ public class CommandEngine extends ListenerAdapter {
             return;
 
         if (command.performCommand(arg, event.getAuthor(), event.getChannel()))
-            event.getMessage().delete().queue();
+            try {
+                event.getMessage().delete().queue();
+            } catch (IllegalStateException | InsufficientPermissionException e) {
+                LOGGER.finer("Couldn't delete a Message");
+            }
     }
 }
