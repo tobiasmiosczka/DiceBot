@@ -1,5 +1,6 @@
 package com.github.tobiasmiosczka.dicebot.commands;
 
+import com.github.tobiasmiosczka.dicebot.discord.command.Argument;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import com.github.tobiasmiosczka.dicebot.discord.command.Command;
 import com.github.tobiasmiosczka.dicebot.parsing.DiceNotationParser;
@@ -9,7 +10,16 @@ import net.dv8tion.jda.api.entities.User;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-@Command(command = "r", helpText = "Rolls some dices.")
+@Command(
+        command = "r",
+        description = "Rolls some dices.",
+        arguments = {
+                @Argument(
+                        name = "rollDefinition",
+                        description = "Definition of the Roll."
+                )
+        }
+)
 public class RollCommand implements CommandFunction {
 
     @Override
@@ -30,12 +40,12 @@ public class RollCommand implements CommandFunction {
             return true;
         } catch (TimeoutException e) {
             messageChannel
-                    .sendMessage(author.getAsMention() + ": '" + arg + "'\n" + "Sorry, this is too complicated for me.")
+                    .sendMessage(author.getAsMention() + ": '" + arg + "'\nSorry, this is too complicated for me.")
                     .queue();
             return false;
         } catch (InterruptedException | ExecutionException e) {
             messageChannel
-                    .sendMessage(author.getAsMention() + ": `" + arg + "`\n" + "Sorry, something went wrong.:thinking:")
+                    .sendMessage(author.getAsMention() + ": `" + arg + "`\nSorry, something went wrong.:thinking:")
                     .queue();
             e.printStackTrace();
             return false;

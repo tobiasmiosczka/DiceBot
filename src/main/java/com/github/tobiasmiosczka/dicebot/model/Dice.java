@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class Dice {
 
-    private static final Random RANDOM = new Random();
+    private static final Random R = new Random();
 
     private final int sides;
 
@@ -13,7 +13,7 @@ public class Dice {
     }
 
     public Roll roll() {
-        return new Roll(RANDOM.nextInt(sides) + 1);
+        return new Roll(R.nextInt(sides) + 1, sides);
     }
 
     public Roll[] roll(int count) {
@@ -22,5 +22,4 @@ public class Dice {
             rolls[i] = roll();
         return rolls;
     }
-
 }

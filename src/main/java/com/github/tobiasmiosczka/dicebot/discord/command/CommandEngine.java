@@ -13,13 +13,14 @@ import java.util.Map;
 
 public class CommandEngine extends ListenerAdapter {
 
-    private static final String COMMAND_PREFIX = "/";
-    private final long SELF_USER_ID_LONG;
+    private final String commandPrefix;
+    private final long botId;
     private final Map<String, CommandFunction> commands;
 
-    public CommandEngine(String commandsPackage, JDA jda) {
+    public CommandEngine(JDA jda, String commandPrefix, String commandsPackage) {
+        this.commandPrefix = commandPrefix;
         commands = new HashMap<>();
-        this.SELF_USER_ID_LONG = jda.getSelfUser().getIdLong();
+        this.botId = jda.getSelfUser().getIdLong();
         try {
             addCommands(commandsPackage);
         } catch (IllegalAccessException | IOException | NoSuchMethodException | InvocationTargetException | InstantiationException e) {
@@ -38,8 +39,8 @@ public class CommandEngine extends ListenerAdapter {
             Command commandAnnotation = c.getAnnotation(Command.class);
             if (commandAnnotation == null)
                 continue;
-            CommandFunction command = c.getDeclaredConstructor().newInstance();
-            addCommand(commandAnnotation.command(), command);
+            CommandFunction commandFunction = c.getDeclaredConstructor().newInstance();
+            addCommand(commandAnnotation.command(), commandFunction);
         }
     }
 
@@ -49,13 +50,13 @@ public class CommandEngine extends ListenerAdapter {
                 .trim()
                 .replaceAll(" +", " ");
 
-        if (!input.startsWith(COMMAND_PREFIX))
+        if (!input.startsWith(commandPrefix))
             return;
 
-        if (event.getAuthor().getIdLong() == SELF_USER_ID_LONG)
+        if (event.getAuthor().getIdLong() == botId)
             return;
 
-        input = input.substring(COMMAND_PREFIX.length());
+        input = input.substring(commandPrefix.length());
 
         int p = input.indexOf(" ");
         String commandString = (p == -1) ? input : input.substring(0, p);

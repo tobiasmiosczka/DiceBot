@@ -6,15 +6,17 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ReflectionUtil {
 
-    public static <T> List<Class<? extends T>> getClassesImplementing(String packageName, Class<? extends T> implementedInterface) throws IOException {
-        return getClasses(packageName).stream()
-                .filter(implementedInterface::isAssignableFrom)
-                .map(a -> (Class<? extends T>)a)
-                .collect(Collectors.toList());
+    public static <T> List<Class<? extends T>> getClassesImplementing(String packageName, Class<T> implementedInterface) throws IOException {
+        List<Class<? extends T>> list = new ArrayList<>();
+        for (Class<?> a : getClasses(packageName)) {
+            if (implementedInterface.isAssignableFrom(a)) {
+                list.add((Class<? extends T>) a);
+            }
+        }
+        return list;
     }
 
     public static  List<Class<?>> getClasses(String packageName) throws IOException {
@@ -24,10 +26,11 @@ public class ReflectionUtil {
         while (resources.hasMoreElements()) {
             dirs.add(new File(resources.nextElement().getFile()));
         }
-        return dirs.stream()
-                .map(directory -> findClasses(directory, packageName))
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
+        List<Class<?>> list = new ArrayList<>();
+        for (File directory : dirs) {
+            list.addAll(findClasses(directory, packageName));
+        }
+        return list;
     }
 
     private static List<Class<?>> findClasses(File directory, String packageName) {
