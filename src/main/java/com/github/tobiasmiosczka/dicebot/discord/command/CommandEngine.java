@@ -1,17 +1,17 @@
 package com.github.tobiasmiosczka.dicebot.discord.command;
 
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
-import com.github.tobiasmiosczka.dicebot.reflection.ReflectionUtil;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.reflections.Reflections;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class CommandEngine extends ListenerAdapter {
@@ -28,9 +28,10 @@ public class CommandEngine extends ListenerAdapter {
         this.botId = jda.getSelfUser().getIdLong();
         try {
             addCommands(commandsPackage);
-        } catch (IllegalAccessException | IOException | NoSuchMethodException | InvocationTargetException | InstantiationException e) {
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException e) {
             e.printStackTrace();
         }
+        LOGGER.log(Level.INFO, commands.size() + " commands loaded.");
     }
 
     public void addCommand(String commandString, CommandFunction commandFunction) {
@@ -39,8 +40,15 @@ public class CommandEngine extends ListenerAdapter {
         commands.put(commandString, commandFunction);
     }
 
-    private void addCommands(String commandsPackage) throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        for (Class<? extends CommandFunction> c : ReflectionUtil.getClassesImplementing(commandsPackage, CommandFunction.class)) {
+    private void addCommands(String commandsPackage)
+            throws
+                NoSuchMethodException,
+                IllegalAccessException,
+                InvocationTargetException,
+                InstantiationException{
+
+        Reflections reflections = new Reflections(commandsPackage);
+        for (Class<? extends CommandFunction> c : reflections.getSubTypesOf(CommandFunction.class)) {
             Command commandAnnotation = c.getAnnotation(Command.class);
             if (commandAnnotation != null) {
                 CommandFunction commandFunction = c.getDeclaredConstructor().newInstance();
@@ -59,7 +67,7 @@ public class CommandEngine extends ListenerAdapter {
         if (!input.startsWith(commandPrefix))
             return;
         int p = input.indexOf(" ");
-        String commandString = (p == -1) ? input : input.substring(commandPrefix.length(), p);
+        String commandString = (p == -1) ? input.substring(1) : input.substring(commandPrefix.length(), p);
         if (!commands.containsKey(commandString))
             return;
         CommandFunction command = commands.get(commandString);

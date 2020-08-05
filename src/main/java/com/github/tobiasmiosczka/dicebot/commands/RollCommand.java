@@ -26,7 +26,7 @@ public class RollCommand implements CommandFunction {
 
     @Override
     public boolean performCommand(String arg, User author, MessageChannel messageChannel) {
-        if (arg == null || arg.isEmpty()) {
+        if (arg == null || arg.isEmpty() || arg.trim().isEmpty()) {
             messageChannel
                     .sendMessage("Roll what?")
                     .queue();

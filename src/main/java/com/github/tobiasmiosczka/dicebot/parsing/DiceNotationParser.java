@@ -18,7 +18,7 @@ public class DiceNotationParser {
     private static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
 
     private static final String[] DICE_SYMBOLS = {"d", "w", "D", "W"};
-    private static final String REGEX_DICE = "\\d+[" + Arrays.stream(DICE_SYMBOLS).reduce(String::concat).get() + "]\\d+";
+    private static final String REGEX_DICE = "\\d+[" + Arrays.stream(DICE_SYMBOLS).reduce(String::concat).orElse("") + "]\\d+";
     private static final Pattern DICE_PATTERN = Pattern.compile(REGEX_DICE);
 
     public static String parseDiceNotation(String input) {

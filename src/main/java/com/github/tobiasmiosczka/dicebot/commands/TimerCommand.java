@@ -1,6 +1,5 @@
 package com.github.tobiasmiosczka.dicebot.commands;
 
-import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -15,15 +14,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-@Command(
-        command = "t",
-        description = "WORK IN PROGRESS"
-)
+//@Command(
+//        command = "t",
+//        description = "WORK IN PROGRESS"
+//)
 public class TimerCommand implements CommandFunction {
 
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1);
 
-    private ConcurrentMap<Message, Long> messages;
+    private final ConcurrentMap<Message, Long> messages;
     private long counter;
 
     public TimerCommand() {
