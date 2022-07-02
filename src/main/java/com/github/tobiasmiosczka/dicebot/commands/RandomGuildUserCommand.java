@@ -5,9 +5,8 @@ import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import com.github.tobiasmiosczka.dicebot.util.CollectionUtil;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 import java.util.List;
 
@@ -18,24 +17,13 @@ import java.util.List;
 public class RandomGuildUserCommand implements CommandFunction {
 
     @Override
-    public boolean performCommand(String arg, User author, MessageChannel messageChannel) {
-        if (messageChannel.getType() != ChannelType.TEXT) {
-            messageChannel
-                    .sendMessage("Command must be performed in a text channel.")
-                    .queue();
-            return false;
-        }
-        List<Member> memberList = ((TextChannel)messageChannel).getGuild().getMembers();
-        if (memberList.isEmpty()) {
-            messageChannel
-                    .sendMessage("Guild is Empty.")
-                    .queue();
-            return false;
-        }
+    public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
+        if (event.getChannel().getType() != ChannelType.TEXT)
+            return event.reply("Command must be performed in a text channel.");
+        List<Member> memberList = event.getGuild().getMembers();
+        if (memberList.isEmpty())
+            return event.reply("Guild is Empty.");
         Member randomMember = CollectionUtil.getRandom(memberList);
-        messageChannel
-                .sendMessage("Random Member: " + randomMember.getAsMention())
-                .queue();
-        return true;
+        return event.reply("Random Member: " + randomMember.getAsMention());
     }
 }

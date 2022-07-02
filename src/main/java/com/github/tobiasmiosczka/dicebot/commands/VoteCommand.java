@@ -1,7 +1,7 @@
 package com.github.tobiasmiosczka.dicebot.commands;
 
+import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Option;
 import com.github.tobiasmiosczka.dicebot.util.CollectionUtil;
-import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Argument;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import emoji4j.EmojiUtils;
@@ -10,18 +10,13 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageReaction;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -32,12 +27,14 @@ import java.util.stream.Stream;
         command = "v",
         description = "Begins a vote.",
         arguments = {
-                @Argument(
-                        name = "timeInSeconds",
+                @Option(
+                        name = "time",
+                        type = OptionType.INTEGER,
                         description = "The duration of the vote in seconds."
                 ),
-                @Argument(
+                @Option(
                         name = "options",
+                        type = OptionType.STRING,
                         description = "All options separated by a space. Between 2 and 20 options allowed."
                 )
         }
@@ -157,9 +154,9 @@ public class VoteCommand implements CommandFunction {
     private static <T> Map<T, Integer> getVotes(List<MessageReaction> messageReactions, Map<T, String> options) {
         Map<T, Integer> votes = new HashMap<>();
         for (MessageReaction r : messageReactions) {
-            if (!options.containsValue(r.getReactionEmote().getEmoji()))
+            if (!options.containsValue(r.getEmoji()))
                 continue;
-            votes.put(CollectionUtil.getKeyByValue(options, r.getReactionEmote().getEmoji()), r.getCount() - 1);
+            votes.put(CollectionUtil.getKeyByValue(options, r.getEmoji().toString()), r.getCount() - 1);
         }
         return votes;
     }
@@ -169,55 +166,42 @@ public class VoteCommand implements CommandFunction {
             Message updatedMessage = message.getChannel().retrieveMessageById(message.getIdLong()).complete();
             Map<T, Integer> votes = getVotes(updatedMessage.getReactions(), options);
             MessageEmbed messageEmbed = buildMessageEmbedResult(timeInSecs, votes);
-            message.editMessage(messageEmbed).complete().clearReactions().queue();
+            message.editMessageEmbeds(messageEmbed).complete().clearReactions().queue();
         }, timeInSecs, TimeUnit.SECONDS);
     }
 
     @Override
-    public boolean performCommand(String arg, User author, MessageChannel messageChannel) {
-        List<String> args = Arrays.asList(arg.split(" "));
-        int timeInSeconds;
+    public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
+        int time;
         try {
-            timeInSeconds = Integer.parseInt(args.get(0));
-        } catch (NumberFormatException e) {
-            messageChannel
-                    .sendMessage("First parameter must be the time to vote in seconds.")
-                    .queue();
-            return false;
+            time = event.getOption("time").getAsInt();
+        } catch (NullPointerException e) {
+            return event.reply("First parameter must be the time to vote in seconds.");
         }
-        if (timeInSeconds < 10) {
-            messageChannel
-                    .sendMessage("Time to vote must be at least 10 seconds.")
-                    .queue();
-            return false;
-        }
-        if (timeInSeconds > 60 * 60 * 24) {
-            messageChannel
-                    .sendMessage("Time to vote must be less than 24 hours.")
-                    .queue();
-            return false;
-        }
-        Set<String> optionsSet = new HashSet<>(args.subList(1, args.size()));
-        if (optionsSet.size() < 2) {
-            messageChannel
-                    .sendMessage("Define at least two options.")
-                    .queue();
-            return false;
-        }
-        if (optionsSet.size() > DEFAULT_EMOJIS.size()) {
-            messageChannel
-                    .sendMessage(DEFAULT_EMOJIS.size() + " options should be enough.")
-                    .queue();
-            return false;
-        }
+        if (time < 10)
+            return event.reply("Time to vote must be at least 10 seconds.");
+        if (time > 60 * 60 * 24)
+            return event.reply("Time to vote must be less than 24 hours.");
+        Set<String> optionsSet = toOptionsSet(event.getOption("options").getAsString());
+        if (optionsSet.size() < 2)
+            return event.reply("Define at least two options.");
+        if (optionsSet.size() > DEFAULT_EMOJIS.size())
+            return event.reply(DEFAULT_EMOJIS.size() + " options should be enough.");
         Map<String, String> options = getOptions(optionsSet);
-        Message message = messageChannel
-                .sendMessage(buildMessageEmbedVote(options, timeInSeconds))
-                .complete();
-        for (Map.Entry<String, String> e : options.entrySet()) {
-            message.addReaction(e.getValue()).queue();
-        }
-        scheduleVoteEnd(message, options, timeInSeconds);
-        return true;
+        Message message = sendMessage(event.getMessageChannel(), options, time);
+        scheduleVoteEnd(message, options, time);
+        return event.reply("ok");
+    }
+
+    private static Set<String> toOptionsSet(String input) {
+        return Arrays.stream(input.split(" "))
+                .collect(Collectors.toSet());
+    }
+
+    private Message sendMessage(MessageChannel messageChannel, Map<String, String> options, int time) {
+        Message message = messageChannel.sendMessageEmbeds(buildMessageEmbedVote(options, time)).complete();
+        for (Map.Entry<String, String> e : options.entrySet())
+            message.addReaction(Emoji.fromUnicode(e.getValue())).queue();
+        return message;
     }
 }

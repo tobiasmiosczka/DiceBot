@@ -52,9 +52,9 @@
 
     <repositories>
         <repository>
-            <id>jcenter</id>
-            <name>jcenter-bintray</name>
-            <url>https://jcenter.bintray.com</url>
+            <id>dv8tion</id>
+            <name>m2-dv8tion</name>
+            <url>https://m2.dv8tion.net/releases</url>
         </repository>
     </repositories>
 
@@ -62,19 +62,19 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>4.2.0_181</version>
+            <version>5.0.0-alpha.13</version>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.7.30</version>
+            <version>1.7.36</version>
         </dependency>
 
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
-            <version>0.9.12</version>
+            <version>0.10.2</version>
         </dependency>
 
         <dependency>
@@ -86,7 +86,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.7.0-M1</version>
+            <version>5.9.0-M1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
