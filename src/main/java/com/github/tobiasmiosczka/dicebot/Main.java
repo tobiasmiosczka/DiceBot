@@ -15,8 +15,8 @@ public class Main {
             " | |__| | | (_|  __/ |_) | (_) | |_ \n" +
             " |_____/|_|\\___\\___|____/ \\___/ \\__|\n";
 
-    public static void main(String[] args) throws LoginException, IOException {
+    public static void main(String[] args) throws LoginException, IOException, InterruptedException {
         System.out.println(BANNER);
-        new DiceBot(DiscordApiTokenUtil.getDiscordApiToken());
+        new DiceBot(DiscordApiTokenUtil.getDiscordApiToken(args));
     }
 }

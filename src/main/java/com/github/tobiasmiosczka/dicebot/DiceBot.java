@@ -13,21 +13,27 @@ import java.util.logging.Logger;
 public class DiceBot {
 
     private static final Logger LOGGER = Logger.getGlobal();
+    private static final String COMMANDS_PACKAGE = "com.github.tobiasmiosczka.dicebot.commands";
+    private static final  String IS_PLAYING_STRING = "Pen & Paper";
 
-    public DiceBot(String apiKey) throws LoginException {
-        JDA jda = JDABuilder.createDefault(apiKey)
+    public DiceBot(String apiKey) throws LoginException, InterruptedException {
+        JDA jda = buildJda(apiKey);
+        CommandEngine commandEngine = new CommandEngine(jda, COMMANDS_PACKAGE);
+        jda.addEventListener(commandEngine);
+        LOGGER.log(Level.INFO, "Bot running on:\n" +
+                jda.getGuilds().stream()
+                        .map(g -> "  -" + g.getName())
+                        .reduce((s1, s2) -> s1 + "\n" + s2)
+                        .orElse(""));
+    }
+
+    private JDA buildJda(String apiKey) throws LoginException, InterruptedException {
+        return JDABuilder.createDefault(apiKey)
                 .setBulkDeleteSplittingEnabled(false)
                 .setCompression(Compression.ZLIB)
-                .setActivity(Activity.playing("Pen & Paper"))
-                .build();
-        jda.addEventListener(new CommandEngine(jda, "!", "com.github.tobiasmiosczka.dicebot.commands"));
-
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        LOGGER.log(Level.INFO, "Bot running on:\n" + jda.getGuilds().stream().map(g -> "  -" + g.getName()).reduce((s1, s2) -> s1 + "\n" + s2).orElse(""));
+                .setActivity(Activity.playing(IS_PLAYING_STRING))
+                .build()
+                .awaitReady();
     }
 
 }

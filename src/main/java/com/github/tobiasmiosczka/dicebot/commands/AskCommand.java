@@ -1,18 +1,21 @@
 package com.github.tobiasmiosczka.dicebot.commands;
 
-import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Argument;
+import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Option;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import com.github.tobiasmiosczka.dicebot.util.CollectionUtil;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 @Command(
         command = "ask",
         description = "Ask me something!",
         arguments = {
-                @Argument(
+                @Option(
                         name = "question",
+                        type = OptionType.STRING,
                         description = "The question to ask."
                 )
         })
@@ -47,13 +50,10 @@ public class AskCommand implements CommandFunction {
     };
 
     @Override
-    public boolean performCommand(String arg, User author, MessageChannel messageChannel) {
-        String question = arg.isEmpty() ? " " : arg;
+    public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
+        String question = event.getOptionsByName("question").get(0).getAsString();
         String answer = CollectionUtil.getRandom(ANSWERS);
-        User bot = messageChannel.getJDA().getSelfUser();
-        messageChannel
-                .sendMessage(author.getAsMention() + ": " + question + "\n" + bot.getAsMention() + ": " + answer)
-                .queue();
-        return true;
+        User bot = event.getJDA().getSelfUser();
+        return event.reply(event.getUser().getAsMention() + ": " + question + "\n" + bot.getAsMention() + ": " + answer);
     }
 }

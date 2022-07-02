@@ -5,8 +5,8 @@ import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.model.Dice;
 import com.github.tobiasmiosczka.dicebot.model.Roll;
 import com.github.tobiasmiosczka.dicebot.parsing.DiceNotationParser;
-import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 @Command(
         command = "p",
@@ -27,15 +27,12 @@ public class TdeProbe5Command implements CommandFunction {
     }
 
     @Override
-    public boolean performCommand(String arg, User author, MessageChannel messageChannel) {
+    public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
         Roll[] rolls = new Dice(20).roll(3);
-        messageChannel
-                .sendMessage(
-                        author.getAsMention()
-                                + ": " + DiceNotationParser.rollsToString(rolls)
-                                + (isCriticalHit(rolls) ? " Critical hit!:partying_face: " : "")
-                                + (isCriticalMiss(rolls) ? " Critical miss!:see_no_evil: " : ""))
-                .queue();
-        return true;
+        return event.reply(
+                event.getUser().getAsMention()
+                        + ": " + DiceNotationParser.rollsToString(rolls)
+                        + (isCriticalHit(rolls) ? " Critical hit!:partying_face: " : "")
+                        + (isCriticalMiss(rolls) ? " Critical miss!:see_no_evil: " : ""));
     }
 }

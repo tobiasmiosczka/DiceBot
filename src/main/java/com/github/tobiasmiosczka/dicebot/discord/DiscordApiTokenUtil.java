@@ -7,7 +7,11 @@ import java.util.Properties;
 
 public class DiscordApiTokenUtil {
 
-    public static String getDiscordApiToken() throws IOException {
+    public static String getDiscordApiToken(String[] args) throws IOException {
+
+        if (args.length != 0)
+            return args[0];
+
         URL url = ClassLoader.getSystemClassLoader().getResource("discord.properties");
         if (url == null)
             return "";

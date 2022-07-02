@@ -7,10 +7,9 @@ import com.github.tobiasmiosczka.dicebot.util.CollectionUtil;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 import java.util.List;
 
@@ -21,32 +20,20 @@ import java.util.List;
 public class RandomChannelUserCommand implements CommandFunction {
 
     @Override
-    public boolean performCommand(String arg, User author, MessageChannel messageChannel) {
-        if (messageChannel.getType() != ChannelType.TEXT) {
-            messageChannel
-                    .sendMessage("This command must be performed in a text channel. :L")
-                    .queue();
-            return false;
+    public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
+        if (event.getChannel().getType() != ChannelType.TEXT) {
+            return event.reply("This command must be performed in a text channel. :L");
         }
-        Guild guild = ((TextChannel)messageChannel).getGuild();
-        VoiceChannel voiceChannel = JdaUtil.getVoiceChannelWithMember(guild, author);
+        Guild guild = event.getGuild();
+        VoiceChannel voiceChannel = JdaUtil.getVoiceChannelWithMember(guild, event.getUser());
         if (voiceChannel == null || voiceChannel.getGuild().getIdLong() != guild.getIdLong()) {
-            messageChannel
-                    .sendMessage("You must be in a voice channel to perform this command. :L")
-                    .queue();
-            return false;
+            return event.reply("You must be in a voice channel to perform this command. :L");
         }
         List<Member> member = voiceChannel.getMembers();
         if (member.isEmpty()) {
-            messageChannel
-                    .sendMessage("VoiceChannel is Empty.")
-                    .queue();
-            return false;
+            return event.reply("VoiceChannel is Empty.");
         }
         Member randomMember = CollectionUtil.getRandom(member);
-        messageChannel
-                .sendMessage("Random User: " + randomMember.getAsMention())
-                .queue();
-        return true;
+        return event.reply("Random User: " + randomMember.getAsMention());
     }
 }
