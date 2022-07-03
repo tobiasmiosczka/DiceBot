@@ -34,9 +34,7 @@ public class RollCommand implements CommandFunction {
             String result = DiceNotationParser.calculate(formula, 10, TimeUnit.SECONDS);
             return event.reply(event.getUser().getAsMention() + ": " + JdaUtil.quoted(arg) + "\n" + rolls + " = " + JdaUtil.underlined(result));
         } catch (TimeoutException e) {
-            return event.reply(
-                            event.getUser().getAsMention() + ": " + JdaUtil.quoted(arg)
-                                    + "\nSorry, this is too complicated for me.");
+            return event.reply(event.getUser().getAsMention() + ": " + JdaUtil.quoted(arg) + "\nSorry, this is too complicated for me.");
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
             return event.reply(event.getUser().getAsMention() + ": " + JdaUtil.quoted(arg) + "\nSorry, something went wrong.:thinking:");

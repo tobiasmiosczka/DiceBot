@@ -3,6 +3,7 @@ package com.github.tobiasmiosczka.dicebot.parsing;
 import com.github.tobiasmiosczka.dicebot.model.Dice;
 import com.github.tobiasmiosczka.dicebot.model.Roll;
 
+import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.util.Arrays;
@@ -18,8 +19,8 @@ public class DiceNotationParser {
     private static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
 
     private static final String[] DICE_SYMBOLS = {"d", "w", "D", "W"};
-    private static final String REGEX_DICE = "\\d+[" + Arrays.stream(DICE_SYMBOLS).reduce(String::concat).orElse("") + "]\\d+";
-    private static final Pattern DICE_PATTERN = Pattern.compile(REGEX_DICE);
+    private static final Pattern DICE_PATTERN = Pattern.compile("\\d+[" + Arrays.stream(DICE_SYMBOLS).reduce("", String::concat) + "]\\d+");
+    private static final String ENGINE_NAME = "graal.js";
 
     public static String parseDiceNotation(String input) {
         return DICE_PATTERN
@@ -28,7 +29,11 @@ public class DiceNotationParser {
     }
 
     private static String calculate(String input) throws ScriptException {
-        return "" + (new ScriptEngineManager().getEngineByName("JavaScript").eval(input));
+        return "" + buildScriptEngine().eval(input);
+    }
+
+    private static ScriptEngine buildScriptEngine() {
+        return new ScriptEngineManager().getEngineByName(ENGINE_NAME);
     }
 
     public static String calculate(String input, long timeoutNanoSeconds, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
@@ -72,14 +77,12 @@ public class DiceNotationParser {
     }
 
     public static String rollsToString(Roll...rolls) {
-        StringBuilder sb = new StringBuilder();
-        for (Roll roll : rolls) {
-            sb.append(rollToString(roll));
-        }
-        return sb.toString();
+        return Arrays.stream(rolls)
+                .map(DiceNotationParser::rollToString)
+                .reduce("", String::concat);
     }
 
     public static String rollToString(Roll roll) {
-        return "[" + roll.getRoll() + "]";
+        return "[" + roll.roll() + "]";
     }
 }

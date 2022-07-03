@@ -15,15 +15,15 @@ import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 public class TdeProbe5Command implements CommandFunction {
 
     private static boolean isCriticalHit(Roll[] rolls) {
-        return ((rolls[0].getRoll() == 1 && rolls[1].getRoll() == 1) ||
-                (rolls[1].getRoll() == 1 && rolls[2].getRoll() == 1) ||
-                (rolls[0].getRoll() == 1 && rolls[2].getRoll() == 1));
+        return ((rolls[0].roll() == 1 && rolls[1].roll() == 1) ||
+                (rolls[1].roll() == 1 && rolls[2].roll() == 1) ||
+                (rolls[0].roll() == 1 && rolls[2].roll() == 1));
     }
 
     private static boolean isCriticalMiss(Roll[] rolls) {
-        return ((rolls[0].getRoll() == 20 && rolls[1].getRoll() == 20) ||
-                (rolls[1].getRoll() == 20 && rolls[2].getRoll() == 20) ||
-                (rolls[0].getRoll() == 20 && rolls[2].getRoll() == 20));
+        return ((rolls[0].roll() == 20 && rolls[1].roll() == 20) ||
+                (rolls[1].roll() == 20 && rolls[2].roll() == 20) ||
+                (rolls[0].roll() == 20 && rolls[2].roll() == 20));
     }
 
     @Override
