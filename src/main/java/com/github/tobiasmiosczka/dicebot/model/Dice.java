@@ -2,15 +2,9 @@ package com.github.tobiasmiosczka.dicebot.model;
 
 import java.util.Random;
 
-public class Dice {
+public record Dice(int sides) {
 
     private static final Random R = new Random();
-
-    private final int sides;
-
-    public Dice(int sides) {
-        this.sides = sides;
-    }
 
     public Roll roll() {
         return new Roll(R.nextInt(sides) + 1, sides);

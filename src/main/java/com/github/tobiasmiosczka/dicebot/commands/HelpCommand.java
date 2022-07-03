@@ -71,8 +71,7 @@ public class HelpCommand implements CommandFunction {
     private static MessageEmbed generateCommandMessage(Command command) {
         String argumentsString = Arrays.stream(command.arguments())
                     .map(a -> (a.isRequired() ? a.name() : "[" + a.name() + "]"))
-                    .reduce((s1, s2) -> s1 + " " + s2)
-                    .orElse("");
+                    .reduce("", (s1, s2) -> s1 + " " + s2);
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle(COMMAND_PREFIX + command.command() + " " + argumentsString)
                 .setDescription(command.description());
@@ -85,7 +84,7 @@ public class HelpCommand implements CommandFunction {
     @Override
     public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
         String arg = event.getOptionsByName("command").get(0).getAsString();
-        if (arg == null || arg.isEmpty()) {
+        if (arg.isEmpty()) {
             return event.replyEmbeds(commandsMessage);
         }
         if (!commands.containsKey(arg)) {

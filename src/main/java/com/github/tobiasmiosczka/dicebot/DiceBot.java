@@ -23,8 +23,7 @@ public class DiceBot {
         LOGGER.log(Level.INFO, "Bot running on:\n" +
                 jda.getGuilds().stream()
                         .map(g -> "  -" + g.getName())
-                        .reduce((s1, s2) -> s1 + "\n" + s2)
-                        .orElse(""));
+                        .reduce("", (s1, s2) -> s1 + "\n" + s2));
     }
 
     private JDA buildJda(String apiKey) throws LoginException, InterruptedException {

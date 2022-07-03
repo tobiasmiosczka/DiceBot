@@ -16,12 +16,13 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import static com.github.tobiasmiosczka.dicebot.util.Emojis.DEFAULT_EMOJIS;
+import static com.github.tobiasmiosczka.dicebot.util.Emojis.DEFINED_EMOJIS;
 
 @Command(
         command = "v",
@@ -43,45 +44,7 @@ public class VoteCommand implements CommandFunction {
 
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1);
 
-    private static final Map<String, String> DEFINED_EMOJIS = Stream.of(
-                new SimpleEntry<>("1", ":one:"),
-                new SimpleEntry<>("2", ":two:"),
-                new SimpleEntry<>("3", ":three:"),
-                new SimpleEntry<>("4", ":four:"),
-                new SimpleEntry<>("5", ":five:"),
-                new SimpleEntry<>("6", ":six:"),
-                new SimpleEntry<>("7", ":seven:"),
-                new SimpleEntry<>("8", ":eight:"),
-                new SimpleEntry<>("9", ":nine:"),
-                new SimpleEntry<>("10", ":ten:"),
-                new SimpleEntry<>("ja", ":white_check_mark:"),
-                new SimpleEntry<>("nein", ":negative_squared_cross_mark:"),
-                new SimpleEntry<>("yes", ":white_check_mark:"),
-                new SimpleEntry<>("no", ":negative_squared_cross_mark:")
-            ).collect(Collectors.toMap(SimpleEntry::getKey, v -> EmojiUtils.emojify(v.getValue())));
-
-    private static final List<String> DEFAULT_EMOJIS = List.of(
-                EmojiUtils.emojify(":strawberry:"),
-                EmojiUtils.emojify(":pineapple:"),
-                EmojiUtils.emojify(":apple:"),
-                EmojiUtils.emojify(":banana:"),
-                EmojiUtils.emojify(":grapes:"),
-                EmojiUtils.emojify(":watermelon:"),
-                EmojiUtils.emojify(":cherries:"),
-                EmojiUtils.emojify(":tomato:"),
-                EmojiUtils.emojify(":corn:"),
-                EmojiUtils.emojify(":eggplant:"),
-                EmojiUtils.emojify(":peach:"),
-                EmojiUtils.emojify(":mushroom:"),
-                EmojiUtils.emojify(":sushi:"),
-                EmojiUtils.emojify(":rice:"),
-                EmojiUtils.emojify(":tea:"),
-                EmojiUtils.emojify(":pear:"),
-                EmojiUtils.emojify(":chestnut:"),
-                EmojiUtils.emojify(":stew:"),
-                EmojiUtils.emojify(":hamburger:"),
-                EmojiUtils.emojify(":bread:")
-            );
+    public VoteCommand() {}
 
     private static <T> Map<T, String> getOptions(Set<T> input) {
         Map<T, String> options = new HashMap<>();
@@ -92,9 +55,9 @@ public class VoteCommand implements CommandFunction {
             String emoji;
             if (DEFINED_EMOJIS.containsKey(option.toString())) {
                 emoji = DEFINED_EMOJIS.get(option.toString());
-            } else if (EmojiUtils.isEmoji(":" + option.toString() + ":")
-                    && !options.containsValue(EmojiUtils.emojify(":" + option.toString() + ":"))) {
-                emoji = EmojiUtils.emojify(":" + option.toString() + ":");
+            } else if (EmojiUtils.isEmoji(":" + option + ":")
+                    && !options.containsValue(EmojiUtils.emojify(":" + option + ":"))) {
+                emoji = EmojiUtils.emojify(":" + option + ":");
             } else {
                 emoji = shuffled.get(iterator++);
                 while (options.containsValue(emoji)) {
@@ -109,8 +72,7 @@ public class VoteCommand implements CommandFunction {
     private static <T> MessageEmbed buildMessageEmbedVote(Map<T, String> options, int timeInSeconds) {
         String optionsString = options.entrySet().stream()
                 .map(e -> e.getValue() + " : " + e.getKey())
-                .reduce((s1, s2) -> s1 + "\n" + s2)
-                .orElse("");
+                .reduce("", (s1, s2) -> s1 + "\n" + s2);
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle("Vote")
                 .addField("Options", optionsString, false)
@@ -122,16 +84,14 @@ public class VoteCommand implements CommandFunction {
     private static <T> MessageEmbed buildMessageEmbedResult(int timeInSeconds, Map<T, Integer> votes) {
         String optionsString = votes.entrySet().stream()
                 .map(e -> e.getKey() + " (" + e.getValue() + ")" )
-                .reduce((s1, s2) -> s1 + "\n" + s2)
-                .orElse("");
+                .reduce("", (s1, s2) -> s1 + "\n" + s2);
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle("Vote (closed)")
                 .addField("Options", optionsString, false)
                 .addField("Time to vote", timeInSeconds + " seconds.", false);
         String winnerString = getWinner(votes).stream()
                 .map(Objects::toString)
-                .reduce((s1, s2) -> s1 + ", " + s2)
-                .orElse("");
+                .reduce("", (s1, s2) -> s1 + ", " + s2);
         embedBuilder.addField("Winner", winnerString, false);
         return embedBuilder.build();
     }
