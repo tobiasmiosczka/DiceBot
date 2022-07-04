@@ -1,5 +1,6 @@
 package com.github.tobiasmiosczka.dicebot.commands;
 
+import com.github.tobiasmiosczka.dicebot.discord.JdaUtil;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Option;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
@@ -18,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.github.tobiasmiosczka.dicebot.discord.JdaUtil.quoted;
 
 @Command(
         command = "help",
@@ -80,7 +83,7 @@ public class HelpCommand implements CommandFunction {
         if (command == null)
             return event.replyEmbeds(commandsMessage);
         if (!commands.containsKey(command.getAsString()))
-            return event.reply("There is no command `" + command + "`");
-        return event.replyEmbeds(commandMessageEmbed.get(command));
+            return event.reply("There is no command " + quoted(command.getAsString()) + ".");
+        return event.replyEmbeds(commandMessageEmbed.get(command.getAsString()));
     }
 }
