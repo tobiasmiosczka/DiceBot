@@ -6,6 +6,7 @@ import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import org.reflections.Reflections;
@@ -75,11 +76,11 @@ public class HelpCommand implements CommandFunction {
 
     @Override
     public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
-        String arg = event.getOptionsByName("command").get(0).getAsString();
-        if (arg.isEmpty())
+        OptionMapping command = event.getOption("command");
+        if (command == null)
             return event.replyEmbeds(commandsMessage);
-        if (!commands.containsKey(arg))
-            return event.reply("There is no command `" + arg + "`");
-        return event.replyEmbeds(commandMessageEmbed.get(arg));
+        if (!commands.containsKey(command.getAsString()))
+            return event.reply("There is no command `" + command + "`");
+        return event.replyEmbeds(commandMessageEmbed.get(command));
     }
 }
