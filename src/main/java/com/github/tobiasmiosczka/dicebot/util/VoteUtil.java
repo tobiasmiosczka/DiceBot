@@ -21,7 +21,7 @@ import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.shuffled;
 
 public class VoteUtil {
 
-    public static Map<String, Emoji> DEFAULT_EMOJIS = Stream.of(
+    public static final Map<String, Emoji> DEFAULT_EMOJIS = Stream.of(
             "\uD83C\uDF47",
             "\uD83C\uDF48",
             "\uD83C\uDF49",
