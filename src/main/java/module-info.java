@@ -6,8 +6,8 @@ module DiceBot {
     requires org.reflections;
 
     requires net.dv8tion.jda;
-    requires emoji4j;
 
     exports com.github.tobiasmiosczka.dicebot;
     opens com.github.tobiasmiosczka.dicebot.commands;
+    opens com.github.tobiasmiosczka.dicebot.util;
 }

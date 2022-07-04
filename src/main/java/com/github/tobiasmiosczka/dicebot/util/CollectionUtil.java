@@ -4,26 +4,26 @@ import java.util.*;
 
 public class CollectionUtil {
 
-    private static final Random R = new Random();
+    private static final Random RANDOM = new Random();
 
-    public static <K, V> K getKeyByValue(Map<K, V> map, V value) {
+    public static <K, V> Optional<K> getKeyByValue(Map<K, V> map, V value) {
         for (Map.Entry<K, V> entry : map.entrySet())
             if (Objects.equals(value, entry.getValue()))
-                return entry.getKey();
-        return null;
+                return Optional.of(entry.getKey());
+        return Optional.empty();
     }
 
-    public static <T> T getRandom(List<T> list) {
-        return list.get(R.nextInt(list.size()));
+    public static <T> T randomOf(List<T> list) {
+        return list.get(RANDOM.nextInt(list.size()));
     }
 
-    public static <T> T getRandom(T[] array) {
-        return array[R.nextInt(array.length)];
+    public static <T> T randomOf(T[] array) {
+        return array[RANDOM.nextInt(array.length)];
     }
 
-    public static <T> List<T> shuffled(List<T> list) {
+    public static <T> List<T> shuffled(Collection<T> list) {
         List<T> shuffled = new ArrayList<>(list);
-        Collections.shuffle(shuffled, R);
+        Collections.shuffle(shuffled, RANDOM);
         return shuffled;
     }
 }

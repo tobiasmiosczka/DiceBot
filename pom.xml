@@ -78,12 +78,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.kcthota</groupId>
-            <artifactId>emoji4j</artifactId>
-            <version>6.0</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.graalvm.js</groupId>
             <artifactId>js</artifactId>
             <version>22.1.0.1</version>

@@ -46,12 +46,11 @@ public class CommandEngine extends ListenerAdapter {
     }
 
     private void addCommand(Command command, CommandFunction commandFunction) {
-        String commandString = command.command();
-        if (commands.containsKey(commandString)) {
+        if (commands.containsKey(command.command())) {
             LOGGER.log(Level.WARNING, "Command %s already registered.".formatted(command.command()));
             return;
         }
-        commands.put(commandString, new Tuple(command, commandFunction));
+        commands.put(command.command(), new Tuple(command, commandFunction));
     }
 
     private void registerCommand(JDA jda, Command commandAnnotation) {

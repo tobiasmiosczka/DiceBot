@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 import java.util.List;
 
-import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.getRandom;
+import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.randomOf;
 
 @Command(
         command = "rgu",
@@ -24,7 +24,7 @@ public class RandomGuildUserCommand implements CommandFunction {
         List<Member> memberList = event.getGuild().getMembers();
         if (memberList.isEmpty())
             return event.reply("Guild is Empty.");
-        Member randomMember = getRandom(memberList);
+        Member randomMember = randomOf(memberList);
         return event.reply("Random Member: " + randomMember.getAsMention());
     }
 }

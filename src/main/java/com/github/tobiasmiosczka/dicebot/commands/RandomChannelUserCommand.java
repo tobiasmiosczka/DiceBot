@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.github.tobiasmiosczka.dicebot.discord.JdaUtil.getVoiceChannelWithMember;
-import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.getRandom;
+import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.randomOf;
 
 @Command(
         command = "rcu",
@@ -32,7 +32,7 @@ public class RandomChannelUserCommand implements CommandFunction {
         List<Member> member = voiceChannel.get().getMembers();
         if (member.isEmpty())
             return event.reply("VoiceChannel is Empty.");
-        Member randomMember = getRandom(member);
+        Member randomMember = randomOf(member);
         return event.reply("Random User: " + randomMember.getAsMention());
     }
 }
