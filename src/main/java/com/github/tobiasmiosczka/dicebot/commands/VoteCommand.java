@@ -45,7 +45,7 @@ public class VoteCommand implements CommandFunction {
             return event.reply(DEFAULT_EMOJIS.size() + " options should be enough.");
         Map<String, Emoji> options = buildOptions(optionsArray);
         Message message = sendVoteMessage(event.getMessageChannel(), options, String::toString, timeInSeconds);
-        scheduleVoteEnd(message, options, timeInSeconds);
+        scheduleVoteEnd(message, options, String::toString, timeInSeconds);
         return event.reply("Ok");
     }
 }

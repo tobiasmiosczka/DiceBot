@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,20 +39,23 @@ public class VoteUtil {
             "\uD83C\uDF46"
     ).collect(Collectors.toMap(e -> e, Emoji::new));
 
+    private static final BinaryOperator<String> LINES_SEPARATED = (s1, s2) -> s1 + "\n" + s2;
+    private static final BinaryOperator<String> COMMA_SEPARATED = (s1, s2) -> s1 + ", " + s2;
+
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1);
 
     public static <T> Message sendVoteMessage(MessageChannel channel, Map<T, Emoji> options, Function<T, String> toString, int timeInSeconds) {
-        Message message = channel.sendMessageEmbeds(buildMessageEmbedVote(options, toString, timeInSeconds)).complete();
+        Message message = channel.sendMessageEmbeds(buildVoteMessage(options, toString, timeInSeconds)).complete();
         for (Map.Entry<T, Emoji> e : options.entrySet())
             message.addReaction(net.dv8tion.jda.api.entities.emoji.Emoji.fromFormatted(e.getValue().emoji())).queue();
         return message;
     }
 
-    public static <T> void scheduleVoteEnd(Message message, Map<T, Emoji> options, int timeInSecs) {
+    public static <T> void scheduleVoteEnd(Message message, Map<T, Emoji> options, Function<T, String> toString, int timeInSecs) {
         SCHEDULER.schedule(() -> {
             Message updatedMessage = message.getChannel().retrieveMessageById(message.getIdLong()).complete();
-            Map<T, Integer> votes = getVotes(updatedMessage.getReactions(), options);
-            MessageEmbed messageEmbed = buildMessageEmbedResult(timeInSecs, votes);
+            Map<T, Integer> votes = getVotes(updatedMessage, options);
+            MessageEmbed messageEmbed = buildResultMessage(timeInSecs, votes, toString);
             message.editMessageEmbeds(messageEmbed).complete().clearReactions().queue();
         }, timeInSecs, TimeUnit.SECONDS);
     }
@@ -73,11 +77,10 @@ public class VoteUtil {
         return options;
     }
 
-    private static <T> MessageEmbed buildMessageEmbedVote(Map<T, Emoji> options, Function<T, String> toString, int timeInSeconds) {
+    private static <T> MessageEmbed buildVoteMessage(Map<T, Emoji> options, Function<T, String> toString, int timeInSeconds) {
         String optionsString = options.entrySet().stream()
                 .map(e -> e.getValue().emoji() + " : " + toString.apply(e.getKey()))
-                .reduce((s1, s2) -> s1 + "\n" + s2)
-                .orElse("");
+                .reduce("", LINES_SEPARATED);
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle("Vote")
                 .addField("Options", optionsString, false)
@@ -86,24 +89,22 @@ public class VoteUtil {
         return embedBuilder.build();
     }
 
-    private static <T> MessageEmbed buildMessageEmbedResult(int timeInSeconds, Map<T, Integer> votes) {
+    private static <T> MessageEmbed buildResultMessage(int timeInSeconds, Map<T, Integer> votes, Function<T, String> toString) {
         String optionsString = votes.entrySet().stream()
                 .map(e -> e.getKey() + " (" + e.getValue() + ")" )
-                .reduce((s1, s2) -> s1 + "\n" + s2)
-                .orElse("");
+                .reduce("", LINES_SEPARATED);
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle("Vote (closed)")
                 .addField("Options", optionsString, false)
                 .addField("Time to vote", timeInSeconds + " seconds.", false);
-        String winnerString = getWinner(votes).stream()
-                .map(Objects::toString)
-                .reduce((s1, s2) -> s1 + ", " + s2)
-                .orElse("");
+        String winnerString = getWinners(votes).stream()
+                .map(toString)
+                .reduce("", COMMA_SEPARATED);
         embedBuilder.addField("Winner", winnerString, false);
         return embedBuilder.build();
     }
 
-    private static <T> Set<T> getWinner(Map<T, Integer> votes) {
+    private static <T> Set<T> getWinners(Map<T, Integer> votes) {
         Set<T> winner = new HashSet<>();
         int max = 0;
         for (Map.Entry<T, Integer> e : votes.entrySet()) {
@@ -117,9 +118,9 @@ public class VoteUtil {
         return winner;
     }
 
-    private static <T> Map<T, Integer> getVotes(List<MessageReaction> messageReactions, Map<T, Emoji> options) {
+    private static <T> Map<T, Integer> getVotes(Message message, Map<T, Emoji> options) {
         Map<T, Integer> votes = new HashMap<>();
-        for (MessageReaction r : messageReactions)
+        for (MessageReaction r : message.getReactions())
             emojiFromString(r.getEmoji().getName())
                     .flatMap(emoji -> getKeyByValue(options, emoji))
                     .ifPresent(e -> votes.put(e, r.getCount() - 1));
