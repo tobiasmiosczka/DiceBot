@@ -21,6 +21,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.shuffled;
 import static com.github.tobiasmiosczka.dicebot.util.Emojis.DEFAULT_EMOJIS;
 import static com.github.tobiasmiosczka.dicebot.util.Emojis.DEFINED_EMOJIS;
 
@@ -48,8 +49,7 @@ public class VoteCommand implements CommandFunction {
 
     private static <T> Map<T, String> getOptions(Set<T> input) {
         Map<T, String> options = new HashMap<>();
-        List<String> shuffled = new ArrayList<>(DEFAULT_EMOJIS);
-        Collections.shuffle(shuffled);
+        List<String> shuffled = shuffled(DEFAULT_EMOJIS);
         int iterator = 0;
         for (T option : input) {
             String emoji;

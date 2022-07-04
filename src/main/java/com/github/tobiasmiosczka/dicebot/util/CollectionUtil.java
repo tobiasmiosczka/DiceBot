@@ -1,16 +1,13 @@
 package com.github.tobiasmiosczka.dicebot.util;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 public class CollectionUtil {
 
     private static final Random R = new Random();
 
-    public static <T, E> T getKeyByValue(Map<T, E> map, E value) {
-        for (Map.Entry<T, E> entry : map.entrySet())
+    public static <K, V> K getKeyByValue(Map<K, V> map, V value) {
+        for (Map.Entry<K, V> entry : map.entrySet())
             if (Objects.equals(value, entry.getValue()))
                 return entry.getKey();
         return null;
@@ -22,5 +19,11 @@ public class CollectionUtil {
 
     public static <T> T getRandom(T[] array) {
         return array[R.nextInt(array.length)];
+    }
+
+    public static <T> List<T> shuffled(List<T> list) {
+        List<T> shuffled = new ArrayList<>(list);
+        Collections.shuffle(shuffled, R);
+        return shuffled;
     }
 }

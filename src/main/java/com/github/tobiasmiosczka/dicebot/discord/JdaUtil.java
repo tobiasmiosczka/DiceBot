@@ -5,29 +5,31 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
+import java.util.Optional;
+
 public class JdaUtil {
 
-    public static VoiceChannel getVoiceChannelWithMember(Guild guild, User user) {
+    public static Optional<VoiceChannel> getVoiceChannelWithMember(Guild guild, User user) {
         for (VoiceChannel voiceChannel : guild.getVoiceChannels())
             for (Member member : voiceChannel.getMembers())
                 if (member.getUser().getIdLong() == user.getIdLong())
-                    return voiceChannel;
-        return null;
+                    return Optional.of(voiceChannel);
+        return Optional.empty();
     }
 
     public static String quoted(String text) {
-        return "`" + text + "`";
+        return "`%s`".formatted(text);
     }
 
     public static String code(String text) {
-        return "```" + text + "```";
+        return "```%s```".formatted(text);
     }
 
     public static String underlined(String text) {
-        return "__" + text + "__";
+        return "__%s__".formatted(text);
     }
 
     public static String crossedOut(String text) {
-        return "~~" + text + "~~";
+        return "~~%s~~".formatted(text);
     }
 }

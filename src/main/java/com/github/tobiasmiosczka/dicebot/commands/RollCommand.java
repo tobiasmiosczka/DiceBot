@@ -3,7 +3,6 @@ package com.github.tobiasmiosczka.dicebot.commands;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Option;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
-import com.github.tobiasmiosczka.dicebot.parsing.DiceNotationParser;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
@@ -14,8 +13,7 @@ import java.util.concurrent.TimeoutException;
 
 import static com.github.tobiasmiosczka.dicebot.discord.JdaUtil.quoted;
 import static com.github.tobiasmiosczka.dicebot.discord.JdaUtil.underlined;
-import static com.github.tobiasmiosczka.dicebot.parsing.DiceNotationParser.parseDiceNotation;
-import static com.github.tobiasmiosczka.dicebot.parsing.DiceNotationParser.parseRollNotation;
+import static com.github.tobiasmiosczka.dicebot.parsing.DiceNotationParser.*;
 
 @Command(
         command = "r",
@@ -34,7 +32,7 @@ public class RollCommand implements CommandFunction {
         String formula = parseRollNotation(rolls);
         String user = event.getUser().getAsMention();
         try {
-            String result = DiceNotationParser.calculate(formula, 10, TimeUnit.SECONDS);
+            String result = calculate(formula, 10, TimeUnit.SECONDS);
             return event.reply(user + ": " + quoted(arg) + "\n" + rolls + " = " + underlined(result));
         } catch (TimeoutException e) {
             return event.reply(user + ": " + quoted(arg) + "\nSorry, this is too complicated for me.");

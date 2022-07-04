@@ -3,11 +3,11 @@ package com.github.tobiasmiosczka.dicebot.commands;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Option;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
-import com.github.tobiasmiosczka.dicebot.util.CollectionUtil;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
+
+import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.getRandom;
 
 @Command(
         command = "ask",
@@ -52,8 +52,9 @@ public class AskCommand implements CommandFunction {
     @Override
     public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
         String question = event.getOptionsByName("question").get(0).getAsString();
-        String answer = CollectionUtil.getRandom(ANSWERS);
-        User bot = event.getJDA().getSelfUser();
-        return event.reply(event.getUser().getAsMention() + ": " + question + "\n" + bot.getAsMention() + ": " + answer);
+        String answer = getRandom(ANSWERS);
+        String bot = event.getJDA().getSelfUser().getAsMention();
+        String user = event.getUser().getAsMention();
+        return event.reply(user + ": " + question + "\n" + bot + ": " + answer);
     }
 }

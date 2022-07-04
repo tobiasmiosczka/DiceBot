@@ -10,10 +10,9 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+
+import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.shuffled;
 
 @Command(
         command = "rco",
@@ -21,22 +20,19 @@ import java.util.Random;
 )
 public class RandomChannelUserOrderCommand implements CommandFunction {
 
-    private static final Random R = new Random();
-
     @Override
     public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
         if (event.getChannel().getType() != ChannelType.TEXT)
             return event.reply("This command must be performed in a text channel. :L");
         Guild guild = event.getGuild();
-        VoiceChannel voiceChannel = JdaUtil.getVoiceChannelWithMember(guild, event.getUser());
-        if (voiceChannel == null || voiceChannel.getGuild().getIdLong() != guild.getIdLong())
+        Optional<VoiceChannel> voiceChannel = JdaUtil.getVoiceChannelWithMember(guild, event.getUser());
+        if (voiceChannel.isEmpty() || voiceChannel.get().getGuild().getIdLong() != guild.getIdLong())
             return event.reply("You must be in a voice channel to perform this command. :L");
-        List<Member> members = new ArrayList<>(voiceChannel.getMembers());
-        Collections.shuffle(members, R);
+        List<Member> members = shuffled(voiceChannel.get().getMembers());
         StringBuilder sb = new StringBuilder();
         sb
                 .append("Random order of ")
-                .append(voiceChannel.getName())
+                .append(voiceChannel.get().getName())
                 .append(":");
         for (int i = 0; i < members.size(); ++i) {
             sb

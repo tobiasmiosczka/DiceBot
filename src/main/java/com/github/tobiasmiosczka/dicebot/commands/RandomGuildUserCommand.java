@@ -2,13 +2,14 @@ package com.github.tobiasmiosczka.dicebot.commands;
 
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
-import com.github.tobiasmiosczka.dicebot.util.CollectionUtil;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 import java.util.List;
+
+import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.getRandom;
 
 @Command(
         command = "rgu",
@@ -23,7 +24,7 @@ public class RandomGuildUserCommand implements CommandFunction {
         List<Member> memberList = event.getGuild().getMembers();
         if (memberList.isEmpty())
             return event.reply("Guild is Empty.");
-        Member randomMember = CollectionUtil.getRandom(memberList);
+        Member randomMember = getRandom(memberList);
         return event.reply("Random Member: " + randomMember.getAsMention());
     }
 }

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Command(
         command = "help",
@@ -33,63 +34,52 @@ public class HelpCommand implements CommandFunction {
 
     private static final String COMMAND_PREFIX = "/";
 
-    private final Map<String, Command> commands;
-    private final MessageEmbed commandsMessage;
+    private final Map<String, Command> commands = new HashMap<>();
     private final Map<String, MessageEmbed> commandMessageEmbed;
-
-    public HelpCommand() {
-        commands = new HashMap<>();
-        try {
-            Reflections reflections = new Reflections(this.getClass().getPackage().getName());
-            Set<Class<? extends CommandFunction>> classes = reflections.getSubTypesOf(CommandFunction.class);
-            for (Class<? extends CommandFunction> c : classes) {
-                Command commandAnnotation = c.getAnnotation(Command.class);
-                if (commandAnnotation == null)
-                    continue;
-                commands.put(commandAnnotation.command(), commandAnnotation);
-            }
-        } catch (Exception e) {
-            //TODO: implement error handling
-        }
-        commandsMessage = generateCommandsMessage(commands);
-        commandMessageEmbed = new HashMap<>();
-        for (Command command : commands.values()) {
-            commandMessageEmbed.put(command.command(), generateCommandMessage(command));
-        }
-    }
+    private final MessageEmbed commandsMessage;
 
     private static MessageEmbed generateCommandsMessage(Map<String, Command> commands) {
         EmbedBuilder embedBuilder = new EmbedBuilder().setTitle("Commands");
         List<Map.Entry<String, Command>> sortedEntries = new ArrayList<>(commands.entrySet());
         sortedEntries.sort(Map.Entry.comparingByKey());
-        for (Map.Entry<String, Command> e : sortedEntries) {
+        for (Map.Entry<String, Command> e : sortedEntries)
             embedBuilder.addField(COMMAND_PREFIX + e.getKey(), e.getValue().description(), false);
-        }
         return embedBuilder.build();
     }
 
     private static MessageEmbed generateCommandMessage(Command command) {
         String argumentsString = Arrays.stream(command.arguments())
-                    .map(a -> (a.isRequired() ? a.name() : "[" + a.name() + "]"))
-                    .reduce("", (s1, s2) -> s1 + " " + s2);
+                .map(a -> (a.isRequired() ? a.name() : "[" + a.name() + "]"))
+                .reduce("", (s1, s2) -> s1 + " " + s2);
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle(COMMAND_PREFIX + command.command() + " " + argumentsString)
                 .setDescription(command.description());
-        for (Option a : command.arguments()) {
+        for (Option a : command.arguments())
             embedBuilder.addField(a.isRequired() ? a.name() : "[" + a.name() + "]", a.description(), false);
-        }
         return embedBuilder.build();
+    }
+
+    public HelpCommand() {
+        Set<Class<? extends CommandFunction>> classes = new Reflections(this.getClass().getPackage().getName())
+                .getSubTypesOf(CommandFunction.class);
+        for (Class<? extends CommandFunction> c : classes) {
+            Command commandAnnotation = c.getAnnotation(Command.class);
+            if (commandAnnotation == null)
+                continue;
+            commands.put(commandAnnotation.command(), commandAnnotation);
+        }
+        commandsMessage = generateCommandsMessage(commands);
+        commandMessageEmbed = commands.values().stream()
+                .collect(Collectors.toMap(Command::command, HelpCommand::generateCommandMessage));
     }
 
     @Override
     public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
         String arg = event.getOptionsByName("command").get(0).getAsString();
-        if (arg.isEmpty()) {
+        if (arg.isEmpty())
             return event.replyEmbeds(commandsMessage);
-        }
-        if (!commands.containsKey(arg)) {
+        if (!commands.containsKey(arg))
             return event.reply("There is no command `" + arg + "`");
-        }
         return event.replyEmbeds(commandMessageEmbed.get(arg));
     }
 }

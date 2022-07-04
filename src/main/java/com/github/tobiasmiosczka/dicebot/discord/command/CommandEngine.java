@@ -9,59 +9,49 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.reflections.Reflections;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
+
+import static com.github.tobiasmiosczka.dicebot.util.ReflectionUtil.instantiate;
 
 public class CommandEngine extends ListenerAdapter {
 
+    private record Tuple(Command command, CommandFunction commandFunction) {}
+
     private static final Logger LOGGER = Logger.getGlobal();
 
-    private final Map<String, CommandFunction> commands;
-    private final Map<String, Command> metaData;
+    private final Map<String, Tuple> commands = new HashMap<>();
+
+    private static OptionData toOptionData(Option option) {
+        return new OptionData(OptionType.STRING, option.name(), option.description(), option.isRequired());
+    }
 
     public CommandEngine(JDA jda, String commandsPackage) {
-        commands = new HashMap<>();
-        metaData = new HashMap<>();
-        try {
-            addCommands(jda, commandsPackage);
-        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException e) {
-            e.printStackTrace();
-        }
+        loadCommands(commandsPackage);
+        commands.values().forEach(e -> registerCommand(jda, e.command()));
         LOGGER.log(Level.INFO, commands.size() + " commands loaded.");
     }
 
-    private void addCommands(JDA jda, String commandsPackage)
-            throws
-                NoSuchMethodException,
-                IllegalAccessException,
-                InvocationTargetException,
-                InstantiationException{
+    private void loadCommands(String commandsPackage) {
         Reflections reflections = new Reflections(commandsPackage);
         for (Class<? extends CommandFunction> c : reflections.getSubTypesOf(CommandFunction.class)) {
             Command command = c.getAnnotation(Command.class);
-            if (command != null) {
-                CommandFunction commandFunction = c.getDeclaredConstructor().newInstance();
-                try {
-                    addCommand(command, commandFunction);
-                    registerCommand(jda, command);
-                } catch (DuplicateCommandException e) {
-                    e.printStackTrace();
-                }
-            }
+            if (command == null)
+                continue;
+            instantiate(c).ifPresent(e -> addCommand(command, e));
         }
     }
 
-    public void addCommand(Command command, CommandFunction commandFunction) throws DuplicateCommandException {
+    private void addCommand(Command command, CommandFunction commandFunction) {
         String commandString = command.command();
-        if (commands.containsKey(commandString) || metaData.containsKey(commandString))
-            throw new DuplicateCommandException(commandFunction.getClass(), commandString);
-        commands.put(commandString, commandFunction);
-        metaData.put(commandString, command);
+        if (commands.containsKey(commandString)) {
+            LOGGER.log(Level.WARNING, "Command %s already registered.".formatted(command.command()));
+            return;
+        }
+        commands.put(commandString, new Tuple(command, commandFunction));
     }
 
     private void registerCommand(JDA jda, Command commandAnnotation) {
@@ -69,17 +59,13 @@ public class CommandEngine extends ListenerAdapter {
                 .setGuildOnly(commandAnnotation.guildOnly())
                 .addOptions(Arrays.stream(commandAnnotation.arguments())
                         .map(CommandEngine::toOptionData)
-                        .collect(Collectors.toList()))
+                        .toList())
                 .complete();
-    }
-
-    private static OptionData toOptionData(Option option) {
-        return new OptionData(OptionType.STRING, option.name(), option.description(), option.isRequired());
     }
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        commands.get(event.getName()).performCommand(event).queue();
+        commands.get(event.getName()).commandFunction().performCommand(event).queue();
     }
 
 }

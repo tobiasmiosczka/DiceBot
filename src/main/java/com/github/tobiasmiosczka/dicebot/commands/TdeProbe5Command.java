@@ -4,9 +4,10 @@ import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.model.Dice;
 import com.github.tobiasmiosczka.dicebot.model.Roll;
-import com.github.tobiasmiosczka.dicebot.parsing.DiceNotationParser;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
+
+import static com.github.tobiasmiosczka.dicebot.parsing.DiceNotationParser.rollsToString;
 
 @Command(
         command = "p",
@@ -30,8 +31,7 @@ public class TdeProbe5Command implements CommandFunction {
     public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
         Roll[] rolls = new Dice(20).roll(3);
         return event.reply(
-                event.getUser().getAsMention()
-                        + ": " + DiceNotationParser.rollsToString(rolls)
+                event.getUser().getAsMention() + ": " + rollsToString(rolls)
                         + (isCriticalHit(rolls) ? " Critical hit!:partying_face: " : "")
                         + (isCriticalMiss(rolls) ? " Critical miss!:see_no_evil: " : ""));
     }
