@@ -56,7 +56,7 @@ public class CommandEngine extends ListenerAdapter {
     private void registerCommand(JDA jda, Command commandAnnotation) {
         jda.upsertCommand(commandAnnotation.command(), commandAnnotation.description())
                 .setGuildOnly(commandAnnotation.guildOnly())
-                .addOptions(Arrays.stream(commandAnnotation.arguments())
+                .addOptions(Arrays.stream(commandAnnotation.options())
                         .map(CommandEngine::toOptionData)
                         .toList())
                 .complete();
@@ -64,7 +64,8 @@ public class CommandEngine extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        commands.get(event.getName()).commandFunction().performCommand(event).queue();
+        Tuple tuple = commands.get(event.getName());
+        tuple.commandFunction().performCommand(event).setEphemeral(tuple.command().ephemeral()).queue();
     }
 
 }

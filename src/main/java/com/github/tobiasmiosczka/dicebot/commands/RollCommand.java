@@ -18,7 +18,7 @@ import static com.github.tobiasmiosczka.dicebot.parsing.DiceNotationParser.*;
 @Command(
         command = "r",
         description = "Rolls some dices.",
-        arguments = {
+        options = {
                 @Option(name = "roll", type = OptionType.STRING, description = "Definition of the Roll.")
         })
 public class RollCommand implements CommandFunction {

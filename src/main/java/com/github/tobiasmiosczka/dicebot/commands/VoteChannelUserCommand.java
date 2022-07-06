@@ -20,7 +20,7 @@ import static com.github.tobiasmiosczka.dicebot.util.VoteUtil.scheduleVoteEnd;
 @Command(
         command = "vcu",
         description = "Starts a voting about users of a voice channel.",
-        arguments = {
+        options = {
                 @Option(
                         name = "time",
                         type = OptionType.INTEGER,

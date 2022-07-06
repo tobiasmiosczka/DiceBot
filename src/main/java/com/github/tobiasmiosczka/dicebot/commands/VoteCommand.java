@@ -16,7 +16,7 @@ import static com.github.tobiasmiosczka.dicebot.util.VoteUtil.*;
 @Command(
         command = "v",
         description = "Starts a voting.",
-        arguments = {
+        options = {
                 @Option(
                         name = "time",
                         type = OptionType.INTEGER,

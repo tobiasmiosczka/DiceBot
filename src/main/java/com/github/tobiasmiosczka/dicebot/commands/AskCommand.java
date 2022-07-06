@@ -12,7 +12,7 @@ import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.randomOf;
 @Command(
         command = "ask",
         description = "Ask me something!",
-        arguments = {
+        options = {
                 @Option(
                         name = "question",
                         type = OptionType.STRING,

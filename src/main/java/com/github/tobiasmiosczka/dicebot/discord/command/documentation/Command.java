@@ -11,6 +11,7 @@ public @interface Command {
 
     String command();
     String description() default "";
-    Option[] arguments() default {};
+    Option[] options() default {};
     boolean guildOnly() default false;
+    boolean ephemeral() default false;
 }

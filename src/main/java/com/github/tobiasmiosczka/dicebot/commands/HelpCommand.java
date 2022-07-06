@@ -1,6 +1,5 @@
 package com.github.tobiasmiosczka.dicebot.commands;
 
-import com.github.tobiasmiosczka.dicebot.discord.JdaUtil;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Option;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
@@ -25,7 +24,7 @@ import static com.github.tobiasmiosczka.dicebot.discord.JdaUtil.quoted;
 @Command(
         command = "help",
         description = "Shows information about either all or one specific command.",
-        arguments = {
+        options = {
                 @Option(
                         name = "command",
                         type = OptionType.STRING,
@@ -52,13 +51,13 @@ public class HelpCommand implements CommandFunction {
     }
 
     private static MessageEmbed generateCommandMessage(Command command) {
-        String argumentsString = Arrays.stream(command.arguments())
+        String argumentsString = Arrays.stream(command.options())
                 .map(a -> (a.isRequired() ? a.name() : "[" + a.name() + "]"))
                 .reduce("", (s1, s2) -> s1 + " " + s2);
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle(COMMAND_PREFIX + command.command() + " " + argumentsString)
                 .setDescription(command.description());
-        for (Option a : command.arguments())
+        for (Option a : command.options())
             embedBuilder.addField(a.isRequired() ? a.name() : "[" + a.name() + "]", a.description(), false);
         return embedBuilder.build();
     }
