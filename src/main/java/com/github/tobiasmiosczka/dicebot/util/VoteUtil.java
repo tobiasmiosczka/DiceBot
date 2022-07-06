@@ -1,6 +1,6 @@
 package com.github.tobiasmiosczka.dicebot.util;
 
-import com.github.tobiasmiosczka.dicebot.model.Emoji;
+import com.github.tobiasmiosczka.dicebot.emoji.Emoji;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -10,63 +10,49 @@ import net.dv8tion.jda.api.entities.MessageReaction;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.getKeyByValue;
-import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.shuffled;
+import static com.github.tobiasmiosczka.dicebot.emoji.Emojis.FOOD_EMOJIS;
+import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.*;
 import static net.dv8tion.jda.api.entities.emoji.Emoji.fromFormatted;
 
 public class VoteUtil {
 
-    public static final Map<String, Emoji> DEFAULT_EMOJIS = Stream.of(
-            "\uD83C\uDF47",
-            "\uD83C\uDF48",
-            "\uD83C\uDF49",
-            "\uD83C\uDF4A",
-            "\uD83C\uDF4B",
-            "\uD83C\uDF4C",
-            "\uD83C\uDF4D",
-            "\uD83C\uDF4E",
-            "\uD83C\uDF50",
-            "\uD83C\uDF51",
-            "\uD83C\uDF52",
-            "\uD83C\uDF53",
-            "\uD83E\uDD5D",
-            "\uD83C\uDF45",
-            "\uD83C\uDF46"
-    ).collect(Collectors.toMap(e -> e, Emoji::new));
-
-    private static final BinaryOperator<String> LINES_SEPARATED = (s1, s2) -> s1 + "\n" + s2;
-    private static final BinaryOperator<String> COMMA_SEPARATED = (s1, s2) -> s1 + ", " + s2;
-
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1);
+    public static final int MAX_OPTIONS = FOOD_EMOJIS.size();
 
-    public static <T> Message sendVoteMessage(MessageChannel channel, Map<T, Emoji> options, Function<T, String> toString, int timeInSeconds) {
-        Message message = channel.sendMessageEmbeds(buildVoteMessage(options, toString, timeInSeconds)).complete();
-        for (Map.Entry<T, Emoji> e : options.entrySet())
-            message.addReaction(fromFormatted(e.getValue().emoji())).queue();
+    public static <T> ScheduledFuture<Set<T>> performVote(MessageChannel channel, List<T> options, Function<T, String> toString, int timeInSeconds) {
+        Map<T, Emoji> optionsMap = buildOptionMap(options);
+        Message message = sendVoteMessage(channel, optionsMap, toString, timeInSeconds);
+        return scheduleVoteEnd(message, optionsMap, toString, timeInSeconds);
+    }
+
+    private static <T> Message sendVoteMessage(MessageChannel channel, Map<T, Emoji> optionsMap, Function<T, String> toString, int timeInSeconds) {
+        Message message = channel.sendMessageEmbeds(buildVoteMessage(optionsMap, toString, timeInSeconds)).complete();
+        optionsMap.forEach((key, value) -> message.addReaction(fromFormatted(value.emoji())).queue());
         return message;
     }
 
-    public static <T> void scheduleVoteEnd(Message message, Map<T, Emoji> options, Function<T, String> toString, int timeInSecs) {
-        SCHEDULER.schedule(() -> {
+    private static <T> ScheduledFuture<Set<T>> scheduleVoteEnd(Message message, Map<T, Emoji> options, Function<T, String> toString, int timeInSecs) {
+        return SCHEDULER.schedule(() -> {
             Message updatedMessage = message.getChannel().retrieveMessageById(message.getIdLong()).complete();
-            MessageEmbed messageEmbed = buildResultMessage(getVotes(updatedMessage, options), toString, timeInSecs);
+            Map<T, Integer> votes = getVotes(updatedMessage, options);
+            Set<T> winners = getWinners(votes);
+            MessageEmbed messageEmbed = buildResultMessage(votes, winners, toString, timeInSecs);
             message.editMessageEmbeds(messageEmbed).complete().clearReactions().queue();
+            return winners;
         }, timeInSecs, TimeUnit.SECONDS);
     }
 
     private static Optional<Emoji> emojiFromString(String emoji) {
-        return Optional.ofNullable(DEFAULT_EMOJIS.get(emoji));
+        return Optional.ofNullable(FOOD_EMOJIS.get(emoji));
     }
 
-    public static <T> Map<T, Emoji> buildOptions(T[] input) {
+    private static <T> Map<T, Emoji> buildOptionMap(List<T> input) {
         Map<T, Emoji> options = new HashMap<>();
-        List<Emoji> shuffled = shuffled(DEFAULT_EMOJIS.values());
+        List<Emoji> shuffled = shuffled(FOOD_EMOJIS.values());
         int iterator = 0;
         for (T option : input) {
             Emoji emoji = shuffled.get(iterator++);
@@ -80,7 +66,7 @@ public class VoteUtil {
     private static <T> MessageEmbed buildVoteMessage(Map<T, Emoji> options, Function<T, String> toString, int timeInSeconds) {
         String optionsString = options.entrySet().stream()
                 .map(e -> e.getValue().emoji() + " : " + toString.apply(e.getKey()))
-                .reduce("", LINES_SEPARATED);
+                .reduce(separatedBy("\n")).orElse("");
         return new EmbedBuilder()
                 .setTitle("Vote")
                 .addField("Options", optionsString, false)
@@ -89,13 +75,13 @@ public class VoteUtil {
                 .build();
     }
 
-    private static <T> MessageEmbed buildResultMessage(Map<T, Integer> votes, Function<T, String> toString, int timeInSeconds) {
+    private static <T> MessageEmbed buildResultMessage(Map<T, Integer> votes, Set<T> winners, Function<T, String> toString, int timeInSeconds) {
         String optionsString = votes.entrySet().stream()
                 .map(e -> toString.apply(e.getKey()) + " (" + e.getValue() + ")" )
-                .reduce("", LINES_SEPARATED);
-        String winnerString = getWinners(votes).stream()
+                .reduce(separatedBy("\n")).orElse("");
+        String winnerString = winners.stream()
                 .map(toString)
-                .reduce("", COMMA_SEPARATED);
+                .reduce(separatedBy(", ")).orElse("");
         return new EmbedBuilder()
                 .setTitle("Vote (closed)")
                 .addField("Options", optionsString, false)

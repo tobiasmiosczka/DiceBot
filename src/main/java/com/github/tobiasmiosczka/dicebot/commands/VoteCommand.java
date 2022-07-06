@@ -3,8 +3,6 @@ package com.github.tobiasmiosczka.dicebot.commands;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Option;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
-import com.github.tobiasmiosczka.dicebot.model.Emoji;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
@@ -38,14 +36,12 @@ public class VoteCommand implements CommandFunction {
             return event.reply("Time to vote must be at least 10 seconds.");
         if (timeInSeconds > 60 * 60 * 24)
             return event.reply("Time to vote must be less than 24 hours.");
-        String[] optionsArray = event.getOption("options").getAsString().split(" ");
-        if (optionsArray.length < 2)
+        List<String> options = List.of(event.getOption("options").getAsString().split(" "));
+        if (options.size() < 2)
             return event.reply("Define at least two options.");
-        if (optionsArray.length > DEFAULT_EMOJIS.size())
-            return event.reply(DEFAULT_EMOJIS.size() + " options should be enough.");
-        Map<String, Emoji> options = buildOptions(optionsArray);
-        Message message = sendVoteMessage(event.getMessageChannel(), options, String::toString, timeInSeconds);
-        scheduleVoteEnd(message, options, String::toString, timeInSeconds);
+        if (options.size() > MAX_OPTIONS)
+            return event.reply(MAX_OPTIONS + " options should be enough.");
+        performVote(event.getMessageChannel(), options, String::toString, timeInSeconds);
         return event.reply("Ok");
     }
 }

@@ -1,10 +1,15 @@
 package com.github.tobiasmiosczka.dicebot.util;
 
 import java.util.*;
+import java.util.function.BinaryOperator;
 
 public class CollectionUtil {
 
     private static final Random RANDOM = new Random();
+
+    public static BinaryOperator<String> separatedBy(String separator) {
+        return (s1, s2) -> s1 + separator + s2;
+    }
 
     public static <K, V> Optional<K> getKeyByValue(Map<K, V> map, V value) {
         for (Map.Entry<K, V> entry : map.entrySet())

@@ -11,15 +11,12 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import org.reflections.Reflections;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.github.tobiasmiosczka.dicebot.discord.JdaUtil.quoted;
+import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.separatedBy;
+import static com.github.tobiasmiosczka.dicebot.util.ReflectionUtil.getAnnotation;
 
 @Command(
         command = "help",
@@ -53,7 +50,7 @@ public class HelpCommand implements CommandFunction {
     private static MessageEmbed generateCommandMessage(Command command) {
         String argumentsString = Arrays.stream(command.options())
                 .map(a -> (a.isRequired() ? a.name() : "[" + a.name() + "]"))
-                .reduce("", (s1, s2) -> s1 + " " + s2);
+                .reduce(separatedBy(" ")).orElse("");
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle(COMMAND_PREFIX + command.command() + " " + argumentsString)
                 .setDescription(command.description());
@@ -65,12 +62,7 @@ public class HelpCommand implements CommandFunction {
     public HelpCommand() {
         Set<Class<? extends CommandFunction>> classes = new Reflections(this.getClass().getPackage().getName())
                 .getSubTypesOf(CommandFunction.class);
-        for (Class<? extends CommandFunction> c : classes) {
-            Command commandAnnotation = c.getAnnotation(Command.class);
-            if (commandAnnotation == null)
-                continue;
-            commands.put(commandAnnotation.command(), commandAnnotation);
-        }
+        classes.forEach(c -> getAnnotation(c, Command.class).ifPresent(ca -> commands.put(ca.command(), ca)));
         commandsMessage = generateCommandsMessage(commands);
         commandMessageEmbed = commands.values().stream()
                 .collect(Collectors.toMap(Command::command, HelpCommand::generateCommandMessage));

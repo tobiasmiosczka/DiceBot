@@ -3,19 +3,16 @@ package com.github.tobiasmiosczka.dicebot.commands;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Option;
-import com.github.tobiasmiosczka.dicebot.model.Emoji;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static com.github.tobiasmiosczka.dicebot.discord.JdaUtil.getVoiceChannelWithMember;
 import static com.github.tobiasmiosczka.dicebot.util.VoteUtil.*;
-import static com.github.tobiasmiosczka.dicebot.util.VoteUtil.scheduleVoteEnd;
 
 @Command(
         command = "vcu",
@@ -46,9 +43,7 @@ public class VoteChannelUserCommand implements CommandFunction {
         List<Member> member = voiceChannel.get().getMembers();
         if (member.isEmpty())
             return event.reply("VoiceChannel is Empty.");
-        Map<Member, Emoji> options = buildOptions(member.toArray(Member[]::new));
-        Message message = sendVoteMessage(event.getMessageChannel(), options, IMentionable::getAsMention, timeInSeconds);
-        scheduleVoteEnd(message, options, IMentionable::getAsMention, timeInSeconds);
+        performVote(event.getMessageChannel(), member, IMentionable::getAsMention, timeInSeconds);
         return event.reply("Ok");
     }
 }
