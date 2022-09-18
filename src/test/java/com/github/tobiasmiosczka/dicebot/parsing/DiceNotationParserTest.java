@@ -76,9 +76,4 @@ class DiceNotationParserTest {
                 new Roll(2, 6),
                 new Roll(3, 6)));
     }
-
-    @Test
-    void testThatFails() {
-        fail();
-    }
 }
