@@ -1,3 +1,4 @@
+[![Build](https://github.com/tobiasmiosczka/DiceBot/actions/workflows/maven.yml/badge.svg)](https://github.com/tobiasmiosczka/DiceBot/actions/workflows/maven.yml)
 # DiceBot
 State-of-the-art Discord dice bot. 
 
