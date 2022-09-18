@@ -9,8 +9,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class DiceNotationParserTest {
 
@@ -76,5 +75,10 @@ class DiceNotationParserTest {
                 new Roll(1, 6),
                 new Roll(2, 6),
                 new Roll(3, 6)));
+    }
+
+    @Test
+    void testThatFailsOnPurpose() {
+        fail();
     }
 }
