@@ -2,6 +2,8 @@ package com.github.tobiasmiosczka.dicebot.commands;
 
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
+import com.github.tobiasmiosczka.dicebot.random.JavaRandomNumberGenerator;
+import com.github.tobiasmiosczka.dicebot.random.RandomNumberGenerator;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -13,13 +15,14 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.github.tobiasmiosczka.dicebot.discord.JdaUtil.getVoiceChannelWithMember;
-import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.randomOf;
 
 @Command(
         command = "rcu",
         description = "Selects a random user of the voice channel."
 )
 public class RandomChannelUserCommand implements CommandFunction {
+
+    private static final RandomNumberGenerator RANDOM_NUMBER_GENERATOR = new JavaRandomNumberGenerator();
 
     @Override
     public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
@@ -32,7 +35,7 @@ public class RandomChannelUserCommand implements CommandFunction {
         List<Member> member = voiceChannel.get().getMembers();
         if (member.isEmpty())
             return event.reply("VoiceChannel is Empty.");
-        Member randomMember = randomOf(member);
+        Member randomMember = RANDOM_NUMBER_GENERATOR.randomOf(member);
         return event.reply("Random User: " + randomMember.getAsMention());
     }
 }

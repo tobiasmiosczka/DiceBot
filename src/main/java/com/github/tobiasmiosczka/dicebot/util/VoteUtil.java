@@ -1,6 +1,7 @@
 package com.github.tobiasmiosczka.dicebot.util;
 
 import com.github.tobiasmiosczka.dicebot.emoji.Emoji;
+import com.github.tobiasmiosczka.dicebot.random.RandomNumberGenerator;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -23,8 +24,8 @@ public class VoteUtil {
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1);
     public static final int MAX_OPTIONS = FOOD_EMOJIS.size();
 
-    public static <T> ScheduledFuture<Set<T>> performVote(MessageChannel channel, List<T> options, Function<T, String> toString, int timeInSeconds) {
-        Map<T, Emoji> optionsMap = buildOptionMap(options);
+    public static <T> ScheduledFuture<Set<T>> performVote(MessageChannel channel, List<T> options, Function<T, String> toString, int timeInSeconds, RandomNumberGenerator randomNumberGenerator) {
+        Map<T, Emoji> optionsMap = buildOptionMap(options, randomNumberGenerator);
         Message message = sendVoteMessage(channel, optionsMap, toString, timeInSeconds);
         return scheduleVoteEnd(message, optionsMap, toString, timeInSeconds);
     }
@@ -50,9 +51,9 @@ public class VoteUtil {
         return Optional.ofNullable(FOOD_EMOJIS.get(emoji));
     }
 
-    private static <T> Map<T, Emoji> buildOptionMap(List<T> input) {
+    private static <T> Map<T, Emoji> buildOptionMap(List<T> input, RandomNumberGenerator randomNumberGenerator) {
         Map<T, Emoji> options = new HashMap<>();
-        List<Emoji> shuffled = shuffled(FOOD_EMOJIS.values());
+        List<Emoji> shuffled = randomNumberGenerator.shuffled(FOOD_EMOJIS.values());
         int iterator = 0;
         for (T option : input) {
             Emoji emoji = shuffled.get(iterator++);
