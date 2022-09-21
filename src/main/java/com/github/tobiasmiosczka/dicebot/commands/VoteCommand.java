@@ -3,6 +3,8 @@ package com.github.tobiasmiosczka.dicebot.commands;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Option;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
+import com.github.tobiasmiosczka.dicebot.random.JavaRandomNumberGenerator;
+import com.github.tobiasmiosczka.dicebot.random.RandomNumberGenerator;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
@@ -29,6 +31,8 @@ import static com.github.tobiasmiosczka.dicebot.util.VoteUtil.*;
 )
 public class VoteCommand implements CommandFunction {
 
+    private static final RandomNumberGenerator RANDOM_NUMBER_GENERATOR = new JavaRandomNumberGenerator();
+
     @Override
     public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
         int timeInSeconds = event.getOption("time").getAsInt();
@@ -41,7 +45,7 @@ public class VoteCommand implements CommandFunction {
             return event.reply("Define at least two options.");
         if (options.size() > MAX_OPTIONS)
             return event.reply(MAX_OPTIONS + " options should be enough.");
-        performVote(event.getMessageChannel(), options, String::toString, timeInSeconds);
+        performVote(event.getMessageChannel(), options, String::toString, timeInSeconds, RANDOM_NUMBER_GENERATOR);
         return event.reply("Ok");
     }
 }
