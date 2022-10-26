@@ -1,9 +1,5 @@
-FROM ubuntu:latest
-
-RUN apt-get update && apt-get install openjdk-18-jre -y
-
-ADD . .
-
+FROM eclipse-temurin:18
+RUN mkdir /opt/app
+COPY ./target/DiceBot-1.2-jar-with-dependencies.jar /opt/app
 ENV api_key=
-
-ENTRYPOINT java -jar ./target/DiceBot-1.2-jar-with-dependencies.jar $api_key
+ENTRYPOINT java -jar "/opt/app/DiceBot-1.2-jar-with-dependencies.jar" $api_key
