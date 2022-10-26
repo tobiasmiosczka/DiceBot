@@ -6,4 +6,4 @@ ADD . .
 
 ENV api_key=
 
-ENTRYPOINT java -jar DiceBot-1.2-jar-with-dependencies.jar $api_key
+ENTRYPOINT java -jar ./target/DiceBot-1.2-jar-with-dependencies.jar $api_key
