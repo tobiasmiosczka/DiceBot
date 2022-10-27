@@ -3,9 +3,9 @@ package com.github.tobiasmiosczka.dicebot.util;
 import com.github.tobiasmiosczka.dicebot.emoji.Emoji;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 
 import java.util.*;
 import java.util.concurrent.Executors;
