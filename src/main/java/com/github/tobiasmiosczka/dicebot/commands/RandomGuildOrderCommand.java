@@ -2,9 +2,9 @@ package com.github.tobiasmiosczka.dicebot.commands;
 
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
-import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
