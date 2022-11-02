@@ -1,4 +1,4 @@
-FROM eclipse-temurin:18
+FROM eclipse-temurin:18-alpine
 RUN mkdir /opt/app
 COPY ./target/DiceBot-1.2-jar-with-dependencies.jar /opt/app
 ENV api_key=
