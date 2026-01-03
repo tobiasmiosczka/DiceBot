@@ -9,14 +9,17 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
-import org.reflections.Reflections;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.github.tobiasmiosczka.dicebot.discord.JdaUtil.quoted;
 import static com.github.tobiasmiosczka.dicebot.util.CollectionUtil.separatedBy;
-import static com.github.tobiasmiosczka.dicebot.util.ReflectionUtil.getAnnotation;
 
 @Command(
         command = "help",
@@ -34,7 +37,7 @@ public class HelpCommand implements CommandFunction {
 
     private static final String COMMAND_PREFIX = "/";
 
-    private final Map<String, Command> commands = new HashMap<>();
+    private final Map<String, Command> commands;
     private final Map<String, MessageEmbed> commandMessageEmbed;
     private final MessageEmbed commandsMessage;
 
@@ -42,8 +45,9 @@ public class HelpCommand implements CommandFunction {
         EmbedBuilder embedBuilder = new EmbedBuilder().setTitle("Commands");
         List<Map.Entry<String, Command>> sortedEntries = new ArrayList<>(commands.entrySet());
         sortedEntries.sort(Map.Entry.comparingByKey());
-        for (Map.Entry<String, Command> e : sortedEntries)
+        for (Map.Entry<String, Command> e : sortedEntries) {
             embedBuilder.addField(COMMAND_PREFIX + e.getKey(), e.getValue().description(), false);
+        }
         return embedBuilder.build();
     }
 
@@ -59,12 +63,13 @@ public class HelpCommand implements CommandFunction {
         return embedBuilder.build();
     }
 
-    public HelpCommand() {
-        Set<Class<? extends CommandFunction>> classes = new Reflections(this.getClass().getPackage().getName())
-                .getSubTypesOf(CommandFunction.class);
-        classes.forEach(c -> getAnnotation(c, Command.class).ifPresent(ca -> commands.put(ca.command(), ca)));
-        commandsMessage = generateCommandsMessage(commands);
-        commandMessageEmbed = commands.values().stream()
+    public HelpCommand(Set<CommandFunction> commands) {
+        this.commands = commands.stream()
+                .map(e -> e.getClass().getAnnotation(Command.class))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(Command::command, e->e));
+        commandsMessage = generateCommandsMessage(this.commands);
+        commandMessageEmbed = this.commands.values().stream()
                 .collect(Collectors.toMap(Command::command, HelpCommand::generateCommandMessage));
     }
 

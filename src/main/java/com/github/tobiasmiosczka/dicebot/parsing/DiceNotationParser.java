@@ -2,6 +2,7 @@ package com.github.tobiasmiosczka.dicebot.parsing;
 
 import com.github.tobiasmiosczka.dicebot.model.Dice;
 import com.github.tobiasmiosczka.dicebot.model.Roll;
+import org.springframework.stereotype.Component;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -14,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
+@Component
 public class DiceNotationParser {
 
     private static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
@@ -22,7 +24,7 @@ public class DiceNotationParser {
     private static final Pattern DICE_PATTERN = Pattern.compile("\\d+[" + Arrays.stream(DICE_SYMBOLS).reduce("", String::concat) + "]\\d+");
     private static final String ENGINE_NAME = "graal.js";
 
-    public static String parseDiceNotation(String input) {
+    public String parseDiceNotation(String input) {
         return DICE_PATTERN
                 .matcher(input)
                 .replaceAll((a) -> parseDice(a.group()));

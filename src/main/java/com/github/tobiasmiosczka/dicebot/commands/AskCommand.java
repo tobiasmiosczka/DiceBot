@@ -4,6 +4,7 @@ import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Option;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
@@ -51,7 +52,7 @@ public class AskCommand implements CommandFunction {
 
     @Override
     public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
-        String question = event.getOptionsByName("question").get(0).getAsString();
+        String question = event.getOption("question", "", OptionMapping::getAsString);
         String answer = randomOf(ANSWERS);
         String bot = event.getJDA().getSelfUser().getAsMention();
         String user = event.getUser().getAsMention();

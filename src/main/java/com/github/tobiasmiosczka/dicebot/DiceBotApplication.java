@@ -1,11 +1,10 @@
 package com.github.tobiasmiosczka.dicebot;
 
-import com.github.tobiasmiosczka.dicebot.discord.DiscordApiTokenUtil;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import javax.security.auth.login.LoginException;
-import java.io.IOException;
-
-public class Main {
+@SpringBootApplication
+public class DiceBotApplication {
 
     private static final String BANNER = """
               _____  _          ____        _  \s
@@ -16,8 +15,8 @@ public class Main {
              |_____/|_|\\___\\___|____/ \\___/ \\__|
             """;
 
-    public static void main(String[] args) throws LoginException, IOException, InterruptedException {
+    public static void main(String[] args) {
         System.out.println(BANNER);
-        new DiceBot(DiscordApiTokenUtil.getDiscordApiToken(args));
+        SpringApplication.run(DiceBotApplication.class, args);
     }
 }

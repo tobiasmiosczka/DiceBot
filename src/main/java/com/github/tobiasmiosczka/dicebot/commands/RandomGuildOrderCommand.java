@@ -29,12 +29,14 @@ public class RandomGuildOrderCommand implements CommandFunction {
 
     @Override
     public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
-        if (event.getChannel().getType() != ChannelType.TEXT)
+        if (event.getChannel().getType() != ChannelType.TEXT) {
             return event.reply("This command can only be performed on a text channel. :L");
+        }
         List<Member> members = shuffled((event.getGuild().getMembers()));
         StringBuilder sb = new StringBuilder(getHeader(event.getGuild()));
-        for (int i = 0; i < members.size(); ++i)
+        for (int i = 0; i < members.size(); ++i) {
             sb.append(toLine(i + 1, members.get(i))).append("\n");
+        }
         return event.reply(sb.toString());
     }
 }
