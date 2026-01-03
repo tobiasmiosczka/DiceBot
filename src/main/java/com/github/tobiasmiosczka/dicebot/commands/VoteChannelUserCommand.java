@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
@@ -31,13 +32,16 @@ public class VoteChannelUserCommand implements CommandFunction {
 
     @Override
     public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
-        int timeInSeconds = event.getOption("time").getAsInt();
-        if (timeInSeconds < 10)
+        int timeInSeconds = event.getOption("time", 0, OptionMapping::getAsInt);
+        if (timeInSeconds < 10) {
             return event.reply("Time to vote must be at least 10 seconds.");
-        if (timeInSeconds > 60 * 60 * 24)
+        }
+        if (timeInSeconds > 60 * 60 * 24) {
             return event.reply("Time to vote must be less than 24 hours.");
-        if (event.getChannel().getType() != ChannelType.TEXT)
+        }
+        if (event.getChannel().getType() != ChannelType.TEXT) {
             return event.reply("This command must be performed in a text channel. :L");
+        }
         Guild guild = event.getGuild();
         Optional<VoiceChannel> voiceChannel = getVoiceChannelWithMember(guild, event.getUser());
         if (voiceChannel.isEmpty() || voiceChannel.get().getGuild().getIdLong() != guild.getIdLong())

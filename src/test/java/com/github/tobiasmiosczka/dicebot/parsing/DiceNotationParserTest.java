@@ -14,11 +14,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DiceNotationParserTest {
 
+    private final DiceNotationParser parser = new DiceNotationParser();
+
     @Test
     void testParseDiceNotation() {
-        assertEquals("[1][1][1][1] + 3",    DiceNotationParser.parseDiceNotation("4d1 + 3"));
-        assertEquals("[1] - 2",             DiceNotationParser.parseDiceNotation("1d1 - 2"));
-        assertEquals("",                    DiceNotationParser.parseDiceNotation(""));
+        assertEquals("[1][1][1][1] + 3",    parser.parseDiceNotation("4d1 + 3"));
+        assertEquals("[1] - 2",             parser.parseDiceNotation("1d1 - 2"));
+        assertEquals("",                    parser.parseDiceNotation(""));
     }
 
     @Test

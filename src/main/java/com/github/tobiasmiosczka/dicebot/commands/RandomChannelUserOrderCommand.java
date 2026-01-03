@@ -22,8 +22,9 @@ public class RandomChannelUserOrderCommand implements CommandFunction {
 
     @Override
     public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
-        if (event.getChannel().getType() != ChannelType.TEXT)
+        if (event.getChannel().getType() != ChannelType.TEXT) {
             return event.reply("This command must be performed in a text channel. :L");
+        }
         Guild guild = event.getGuild();
         Optional<VoiceChannel> voiceChannel = JdaUtil.getVoiceChannelWithMember(guild, event.getUser());
         if (voiceChannel.isEmpty() || voiceChannel.get().getGuild().getIdLong() != guild.getIdLong())

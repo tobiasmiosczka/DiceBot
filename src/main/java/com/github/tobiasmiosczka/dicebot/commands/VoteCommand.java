@@ -4,12 +4,14 @@ import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Option;
 import com.github.tobiasmiosczka.dicebot.discord.command.documentation.Command;
 import com.github.tobiasmiosczka.dicebot.discord.command.CommandFunction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
-import java.util.*;
+import java.util.List;
 
-import static com.github.tobiasmiosczka.dicebot.util.VoteUtil.*;
+import static com.github.tobiasmiosczka.dicebot.util.VoteUtil.MAX_OPTIONS;
+import static com.github.tobiasmiosczka.dicebot.util.VoteUtil.performVote;
 
 @Command(
         command = "v",
@@ -31,16 +33,20 @@ public class VoteCommand implements CommandFunction {
 
     @Override
     public ReplyCallbackAction performCommand(SlashCommandInteractionEvent event) {
-        int timeInSeconds = event.getOption("time").getAsInt();
-        if (timeInSeconds < 10)
+        int timeInSeconds = event.getOption("time",  0, OptionMapping::getAsInt);
+        if (timeInSeconds < 10) {
             return event.reply("Time to vote must be at least 10 seconds.");
-        if (timeInSeconds > 60 * 60 * 24)
+        }
+        if (timeInSeconds > 60 * 60 * 24) {
             return event.reply("Time to vote must be less than 24 hours.");
-        List<String> options = List.of(event.getOption("options").getAsString().split(" "));
-        if (options.size() < 2)
+        }
+        List<String> options = event.getOption("options", List.of(), e -> List.of(e.getAsString().split(" ")));
+        if (options.size() < 2) {
             return event.reply("Define at least two options.");
-        if (options.size() > MAX_OPTIONS)
+        }
+        if (options.size() > MAX_OPTIONS) {
             return event.reply(MAX_OPTIONS + " options should be enough.");
+        }
         performVote(event.getMessageChannel(), options, String::toString, timeInSeconds);
         return event.reply("Ok");
     }
